@@ -82,6 +82,7 @@ WpPlayerLibState* wp_playerlib_create(float sampleRate, int64_t bufferingLookahe
   state->engine = NULL;
   state->phase = WP_PHASE_NONE;
   state->playbackState = WP_PB_STOPPED;
+  state->timelineToEngineFrameDelta[WP_PHASE_NONE] = 0;
   state->timelineToEngineFrameDelta[WP_PHASE_PRE] = 0;
   state->timelineToEngineFrameDelta[WP_PHASE_SESSION] = 0;
   state->timelineToEngineFrameDelta[WP_PHASE_POST] = 0;
@@ -397,8 +398,11 @@ WpPlayerLibPhase wp_playerlib_get_phase(WpPlayerLibState* state) {
 }
 
 int64_t wp_playerlib_get_time_in_phase(WpPlayerLibState* state) {
+  pthread_mutex_lock(&state->mutex);
   int64_t timeInFrames = ma_engine_get_time_in_pcm_frames(state->engine) - state->timelineToEngineFrameDelta[state->phase];
-  return timeInFrames / ma_engine_get_sample_rate(state->engine) * 1000;
+  int64_t timeInMs = timeInFrames * 1000 / ma_engine_get_sample_rate(state->engine);
+  pthread_mutex_unlock(&state->mutex);
+  return timeInMs;
 }
 
 int wp_playerlib_set_phase(WpPlayerLibState* state, WpPlayerLibPhase phase, int64_t timeInPhase) {

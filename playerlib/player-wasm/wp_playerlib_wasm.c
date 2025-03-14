@@ -33,10 +33,10 @@ EM_JS(void, fetchUrlAsync, (const char* url, uint32_t id, int32_t delay, void* s
   let abort = new AbortController();
   window._wpPlayerLibAborts = window._wpPlayerLibAborts || new Map();
   window._wpPlayerLibAborts.set(id, abort);
-
+  
   function req() {
     let startTime = Date.now();
-    console.log('Fetch', urlString);
+    console.log('Fetch', urlString, 'with id', id);
     fetch(urlString, { signal: abort.signal })
       .then(response => {
         if (!response.ok) {
@@ -58,7 +58,9 @@ EM_JS(void, fetchUrlAsync, (const char* url, uint32_t id, int32_t delay, void* s
         _wp_playerlib_wasm_network_response(state, id, 1, null);
       })
       .finally(() => {
-        window._wpPlayerLibAborts.delete(id);
+        if (window._wpPlayerLibAborts.get(id) === abort) {
+          window._wpPlayerLibAborts.delete(id);
+        }
         console.log('Fetch for', urlString, 'completed in', Date.now() - startTime, 'ms');
       });
   }

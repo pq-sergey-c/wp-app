@@ -15,6 +15,7 @@ typedef struct EncFileCallbackCtx {
   FILE *file;
   const char *fileName;
 
+  int32_t writtenFrames;
   double writtenDuration;
 } EncFileCallbackCtx;
 
@@ -29,7 +30,7 @@ int encClose(void *user_data) {
   fprintf(ctx->playlistFile, "#EXTINF:%.8f,\n", ctx->writtenDuration);
   fprintf(ctx->playlistFile, "chunk_%04d.ogg\n", ctx->chunkNumber);
   fflush(ctx->playlistFile);
-  printf("CHUNK %s\n", ctx->fileName);
+  printf("CHUNK %s %d\n", ctx->fileName, ctx->writtenFrames);
   free((void*)ctx->fileName);
   ctx->inUse = false;
   return result;
@@ -147,6 +148,7 @@ int encode(FILE *input, int numChannels, int sampleRate, int32_t targetStreamChu
       goto cleanup;
     }
     if (framesInChunk >= currentFramesPerStreamChunk) {
+      contexts[currentContextIndex].writtenFrames = framesInChunk;
       contexts[currentContextIndex].writtenDuration = (double)framesInChunk / sampleRate;
       snprintf(chunkOutputFilename, 1024, "%s/chunk_%04d.ogg", outputDir, chunkCounter + 1);
       chunkCounter++;
@@ -191,6 +193,7 @@ int encode(FILE *input, int numChannels, int sampleRate, int32_t targetStreamChu
   }
 
   if (framesInChunk > 0) {
+    contexts[currentContextIndex].writtenFrames = framesInChunk;
     contexts[currentContextIndex].writtenDuration = (double)framesInChunk / sampleRate;
   }
 
