@@ -391,7 +391,6 @@ class FreudConnectionOffline: FreudConnection {
                     timeline: [TimelineItem(
                       sessionId: session.id,
                       dspOffset: 0,
-                      broadcastOffset: 0
                     )],
                     discarded: broadcastState.discarded
                 )

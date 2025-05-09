@@ -9,14 +9,12 @@ import SwiftyJSON
 struct TimelineItem: Codable {
     var sessionId: String
     var dspOffset: UInt64
-    var broadcastOffset: UInt64?
 }
 
 extension TimelineItem {
     init(json: JSON) {
         self.sessionId = json["sessionId"].stringValue
         self.dspOffset = json["dspOffset"].uInt64Value
-        self.broadcastOffset = json["broadcastOffset"].uInt64
     }
 }
 
