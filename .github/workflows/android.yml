@@ -25,13 +25,13 @@ jobs:
 
       - name: Decode and decrypt signing key
         env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ENCRYPTION_PASSWORD: ${{ secrets.KEY_ENCRYPTION_PASSWORD }}
           ENCRYPTED_KEY: ${{ secrets.ENCRYPTED_KEY }}
         run: |
-          echo "::add-mask::$KEYSTORE_PASSWORD"
+          echo "::add-mask::$KEY_ENCRYPTION_PASSWORD"
           echo "::add-mask::$ENCRYPTED_KEY"
           printf '%s' "$ENCRYPTED_KEY" > wavepaths.keystore.jks.enc.b64
-          openssl enc -d -camellia-256-cbc -a -pbkdf2 -in wavepaths.keystore.jks.enc.b64 -out wavepaths.keystore.jks -pass env:KEYSTORE_PASSWORD
+          openssl enc -d -camellia-256-cbc -a -pbkdf2 -in wavepaths.keystore.jks.enc.b64 -out wavepaths.keystore.jks -pass env:KEY_ENCRYPTION_PASSWORD
           rm -f wavepaths.keystore.jks.enc.b64
 
       - name: Add key.properties file
