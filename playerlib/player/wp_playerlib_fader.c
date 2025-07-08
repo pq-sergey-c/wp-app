@@ -1,3 +1,5 @@
+#include <inttypes.h>
+
 typedef struct {
   float source;
   float target;
@@ -34,7 +36,7 @@ void wp_playerlib_fader_set_source_and_target_starting_at_frame(wp_playerlib_fad
   uint64_t framesUntilStart = now > startAtFrame ? 0 : (startAtFrame - now);
 
   if (framesUntilStart > INT32_MAX >> 1) {
-    printf("Fade scheduled very far in future (%llu frames), skipping\n", framesUntilStart);
+    printf("Fade scheduled very far in future (%"PRIu64" frames), skipping\n", framesUntilStart);
     return;
   }
 
@@ -49,7 +51,7 @@ void wp_playerlib_fader_set_source_and_target_starting_at_frame(wp_playerlib_fad
   };
   atomic_store(&pFader->fade, newFade);
   atomic_store(&pFader->progress, newProgress);
-  printf("Set fader %f-%f between frames %llu-%llu\n", source, target, startAtFrame, startAtFrame + fadeFrames);
+  printf("Set fader %f-%f between frames %"PRIu64"-%"PRIu64"\n", source, target, startAtFrame, startAtFrame + fadeFrames);
 }
 
 void wp_playerlib_fader_set_target_starting_at_frame(wp_playerlib_fader* pFader, float target, uint64_t startAtFrame, uint64_t fadeFrames) {

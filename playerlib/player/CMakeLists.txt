@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22.2)
+cmake_minimum_required(VERSION 3.22.1)
 
 include(FetchContent)
 
@@ -50,6 +50,12 @@ if(APPLE)
     "-framework AVFoundation"
     "-framework AudioToolbox"
   )
+elseif(ANDROID) # maybe unneeded
+  target_link_libraries(WpPlayerLib
+          log
+          android
+          OpenSLES
+  )
 endif()
 
 set_property(TARGET WpPlayerLib PROPERTY C_STANDARD 17)
@@ -61,6 +67,8 @@ if(TARGET_GROUP STREQUAL test)
 endif()
 
 set_target_properties(WpPlayerLib PROPERTIES COMPILE_FLAGS "-Wall -Wextra -Wpedantic -Werror")
+set(CMAKE_C_FLAGS_RELEASE "-O2 -DNDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 
 install(TARGETS WpPlayerLib
   ARCHIVE DESTINATION lib

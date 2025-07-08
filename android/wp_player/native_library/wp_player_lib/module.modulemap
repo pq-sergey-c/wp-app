@@ -1,0 +1,4 @@
+module WpPlayerLib {
+  header "wp_playerlib.h"
+  export *
+}

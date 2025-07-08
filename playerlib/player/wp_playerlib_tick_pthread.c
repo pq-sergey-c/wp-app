@@ -9,7 +9,7 @@ typedef struct WpPlayerLibTickState {
 void wp_playerlib_tick_init(WpPlayerLibTickState* state, WpPlayerLibTickResult (*callback)(void*), void* context) {
   pthread_mutex_init(&state->mutex, NULL);
   pthread_cond_init(&state->cond, NULL);
-  state->thread = NULL;
+  state->thread = (pthread_t)0;
   state->callback = callback;
   state->context = context;
 }
@@ -45,7 +45,7 @@ void wp_playerlib_tick_await_stop(WpPlayerLibTickState* state) {
   pthread_mutex_lock(&state->mutex);
   pthread_cond_signal(&state->cond);
   pthread_mutex_unlock(&state->mutex);
-  if (state->thread != NULL) {
+  if (state->thread != (pthread_t)0) {
     pthread_join(state->thread, NULL);
   }
 }
@@ -53,5 +53,5 @@ void wp_playerlib_tick_await_stop(WpPlayerLibTickState* state) {
 void wp_playerlib_tick_destroy(WpPlayerLibTickState* state) {
   pthread_mutex_destroy(&state->mutex);
   pthread_cond_destroy(&state->cond);
-  state->thread = NULL;
+  state->thread = (pthread_t)0;
 }

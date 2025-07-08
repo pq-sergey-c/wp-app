@@ -1,7 +1,7 @@
 #define WP_PLAYERLIB_STREAM_CHUNK_COUNT 200
 
 #define WP_PLAYERLIB_CHUNK_WINDOW_LOOKBACK 10
-
+#include <inttypes.h>
 typedef enum WpPlayerLibStreamStatus {
   WP_S_ARMED,
   WP_S_STARTED,
@@ -308,7 +308,7 @@ void wp_playerlib_stream_print_state(WpPlayerLibStreamState *state) {
       case WP_SC_STARTED: strcpy(stateString, "STARTED"); break;
       case WP_SC_ERROR: strcpy(stateString, "ERROR  "); break;
     }
-    printf("  Chunk state=%s %f-%f (%lld->%lld)\n",
+    printf("  Chunk state=%s %f-%f (%"PRId64"->%"PRId64")\n",
       stateString,
       chunk->fromTime,
       chunk->toTime,
@@ -334,7 +334,7 @@ void _wp_playerlib_stream_schedule_fade_out(WpPlayerLibStreamState *state) {
   int64_t startFadeOutAtEngineFrame = max64(fadeOutScheduledAtEngineFrame, ma_engine_get_time_in_pcm_frames(state->engine));
   int64_t endEngineFrame = wp_playerlib_stream_get_end_engine_frame(state);
   uint64_t fadeOutFrames = endEngineFrame < 0 ? 0 : endEngineFrame - min64(endEngineFrame, startFadeOutAtEngineFrame);
-  printf("Fade out scheduled at frame %lld, starting at frame %lld, fading out %llu frames\n", fadeOutScheduledAtEngineFrame, startFadeOutAtEngineFrame, fadeOutFrames);
+  printf("Fade out scheduled at frame %"PRId64", starting at frame %"PRId64", fading out %"PRIu64" frames\n", fadeOutScheduledAtEngineFrame, startFadeOutAtEngineFrame, fadeOutFrames);
   if (startFadeOutAtEngineFrame > (int64_t)ma_engine_get_time_in_pcm_frames(state->engine)) {
     // Ensure we're at full gain first if we're not already in the frame time.
     // This is mostly to address seek-back from previous faded streams.
