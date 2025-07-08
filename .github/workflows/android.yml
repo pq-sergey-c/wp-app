@@ -1,33 +1,62 @@
-name: "Test Android build" #   and deploy to play console (to internal testing)
-
-on: 
+name: "Android build" # TODO: add and deploy (when and if applicable)
+on:
   push:
     branches: [master]
+
+permissions:
+  contents: read
 
 jobs:
   build_sign_deploy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Add Java 21
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'temurin'
-        java-version: '21'
-    
-    - name: Add Dart (Flutter) 
-      uses: subosito/flutter-action@v2
-      with:
-        channel: stable
-    
-    # Android SDK, Android NDK and CMake already added on ubuntu-lates
+      - uses: actions/checkout@v4
 
-    - name: Test flutter build
-      run: flutter build apk --debug
+      - name: Add Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "21"
 
-    - uses: actions/upload-artifact@v4
-      with:
-        name: "Debug apk"
-        path: "build/app/outputs/flutter-apk/app-debug.apk"
-    
+      - name: Add Dart (Flutter)
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Decode and decrypt signing key
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          ENCRYPTED_KEY: ${{ secrets.ENCRYPTED_KEY }}
+        run: |
+          echo "::add-mask::$KEYSTORE_PASSWORD"
+          echo "::add-mask::$ENCRYPTED_KEY"
+          printf '%s' "$ENCRYPTED_KEY" > wavepaths.keystore.jks.enc.b64
+          openssl enc -d -camellia-256-cbc -a -pbkdf2 -in wavepaths.keystore.jks.enc.b64 -out wavepaths.keystore.jks -pass env:KEYSTORE_PASSWORD
+          rm -f wavepaths.keystore.jks.enc.b64
+
+      - name: Add key.properties file
+        env:
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          echo "::add-mask::$STORE_PASSWORD"
+          echo "::add-mask::$KEY_PASSWORD"
+          echo "::add-mask::$KEY_ALIAS"
+          printf 'storePassword="%s"\nkeyPassword="%s"\nkeyAlias="%s"\nstoreFile=../../wavepaths.keystore.jks\n' "$STORE_PASSWORD" "$KEY_PASSWORD" "$KEY_ALIAS" > android/key.properties
+
+      - name: Flutter build
+        run: flutter build appbundle --release
+
+      # TODO: add https://github.com/r0adkll/upload-google-play
+
+      - name: Cleanup sensitive files
+        if: always()
+        run: |
+          rm -f wavepaths.keystore.jks
+          rm -f android/key.properties
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Release bundle
+          path: "build/app/outputs/bundle/release/app-release.aab"
