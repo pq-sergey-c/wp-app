@@ -5,3 +5,8 @@
 # flutter produced
 .flutter-plugins-dependencies
 .dart_tool
+build
+
+# signing keys
+**/*.jks
+**/*.keystore

@@ -12,9 +12,7 @@ plugins {
 
 val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
-if (keystorePropertiesFile.exists()) {
-    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
-}
+if (keystorePropertiesFile.exists()) keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
@@ -25,7 +23,7 @@ dependencies {
 android {
     namespace = "com.wavepaths.player"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = "27.0.12077973" // Was: flutter.ndkVersion // TODO: fix flutter.ndkVersion error
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -42,6 +40,10 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        ndk {
+            abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86_64")
+        }
     }
 
     externalNativeBuild {
@@ -51,22 +53,33 @@ android {
     }
 
     signingConfigs {
-        create("release") {
-            keyAlias = keystoreProperties["keyAlias"] as String
-            keyPassword = keystoreProperties["keyPassword"] as String
-            storeFile = keystoreProperties["storeFile"]?.let { file(it) }
-            storePassword = keystoreProperties["storePassword"] as String
+        if (keystorePropertiesFile.exists()) {
+            create("release") {
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storeFile = keystoreProperties["storeFile"]?.let { file(it) }
+                storePassword = keystoreProperties["storePassword"] as String
+            }
         }
     }
 
 
     buildTypes {
         release {
+            if (!keystorePropertiesFile.exists()) return@release // throws in taskGraph.whenReady
             signingConfig = signingConfigs.getByName("release")
-            ndk {
-                abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86_64", "x86")
-            }
         }
+    }
+}
+
+gradle.taskGraph.whenReady {
+    val isReleaseVariant = allTasks.any { it.name.contains("release", ignoreCase = true) }
+    if (isReleaseVariant && !keystorePropertiesFile.exists())  {
+        throw GradleException(
+            "Missing key.properties file — required for application signing in release build variants.\n" +
+            "Please add 'key.properties' under android subfolder, possibly using 'key.properties.example' as a reference.\n" +
+            "And please ensure it contains correct keystore configuration."
+        )
     }
 }
 
