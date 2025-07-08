@@ -1,0 +1,33 @@
+name: "Test Android build" #   and deploy to play console (to internal testing)
+
+on: 
+  push:
+    branches: [master]
+
+jobs:
+  build_sign_deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Add Java 21
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '21'
+    
+    - name: Add Dart (Flutter) 
+      uses: subosito/flutter-action@v2
+      with:
+        channel: stable
+    
+    # Android SDK, Android NDK and CMake already added on ubuntu-lates
+
+    - name: Test flutter build
+      run: flutter build apk --debug
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: "Debug apk"
+        path: "build/app/outputs/flutter-apk/app-debug.apk"
+    
