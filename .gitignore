@@ -1,2 +1,7 @@
+# code editors
 .vscode
 .idea
+
+# flutter produced
+.flutter-plugins-dependencies
+.dart_tool
