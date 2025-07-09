@@ -10,6 +10,9 @@ jobs:
   build_sign_deploy:
     runs-on: ubuntu-latest
     steps:
+      # ----------------------------------------------------
+      # setup
+
       - uses: actions/checkout@v4
 
       - name: Add Java 21
@@ -22,6 +25,9 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+
+      # ----------------------------------------------------
+      # pre building and building
 
       - name: Decode and decrypt signing key
         env:
@@ -49,15 +55,33 @@ jobs:
       - name: Flutter build
         run: flutter build appbundle --release
 
-      # TODO: replace with Workload identity authentication https://github.com/r0adkll/upload-google-play
-
       - name: Cleanup sensitive files
         if: always()
         run: |
           rm -f wavepaths.keystore.jks
           rm -f android/key.properties
 
-      - uses: actions/upload-artifact@v4
+      # ----------------------------------------------------
+      # publishing
+
+      - name: Get release version
+        id: version
+        run: echo "version=$(grep -Po '^\s*version:\s*\K\S+' pubspec.yaml | sed 's/+/./g')" >> "$GITHUB_OUTPUT"
+
+      # TODO: replace with Workload identity authentication https://github.com/r0adkll/upload-google-play
+      - name: Publish to Play Console
+        env:
+          SERVICE_ACCOUNT_JSON: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+        uses: r0adkll/upload-google-play@v1
         with:
-          name: Release bundle
-          path: "build/app/outputs/bundle/release/app-release.aab"
+          serviceAccountJsonPlainText: "$SERVICE_ACCOUNT_JSON"
+          packageName: "com.wavepaths.player"
+          releaseFiles: "build/app/outputs/bundle/release/app-release.aab"
+          track: "qa" # internal testing
+
+      - name: Add git release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "v.${{ steps.version.outputs.version }}"
+          name: "v.${{ steps.version.outputs.version }}"
+          files: "build/app/outputs/bundle/release/app-release.aab"
