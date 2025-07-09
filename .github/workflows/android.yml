@@ -28,6 +28,8 @@ jobs:
           KEY_ENCRYPTION_PASSWORD: ${{ secrets.KEY_ENCRYPTION_PASSWORD }}
           ENCRYPTED_KEY: ${{ secrets.ENCRYPTED_KEY }}
         run: |
+          echo "::add-mask::$KEY_ENCRYPTION_PASSWORD"
+          echo "::add-mask::$ENCRYPTED_KEY"
           printf '%s' "$ENCRYPTED_KEY" > wavepaths.keystore.jks.enc.b64
           openssl enc -d -camellia-256-cbc -a -pbkdf2 -in wavepaths.keystore.jks.enc.b64 -out wavepaths.keystore.jks -pass env:KEY_ENCRYPTION_PASSWORD
           rm -f wavepaths.keystore.jks.enc.b64
@@ -36,11 +38,10 @@ jobs:
         env:
           STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_ALIAS: ${{ vars.KEY_ALIAS }}
         run: |
           echo "::add-mask::$STORE_PASSWORD"
           echo "::add-mask::$KEY_PASSWORD"
-          echo "::add-mask::$KEY_ALIAS"
           printf 'storePassword="%s"\nkeyPassword="%s"\nkeyAlias="%s"\nstoreFile=../../wavepaths.keystore.jks\n' "$STORE_PASSWORD" "$KEY_PASSWORD" "$KEY_ALIAS" > android/key.properties
 
       - name: Flutter build
