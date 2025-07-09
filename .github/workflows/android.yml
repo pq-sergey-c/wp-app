@@ -34,6 +34,7 @@ jobs:
           base64 -d wavepaths.keystore.jks.enc.b64 > wavepaths.keystore.jks.enc
           openssl enc -d -camellia-256-cbc -pbkdf2 -in wavepaths.keystore.jks.enc -out wavepaths.keystore.jks -pass env:KEY_ENCRYPTION_PASSWORD
           rm -f wavepaths.keystore.jks.enc.b64
+          rm -f wavepaths.keystore.jks.enc
 
       - name: Add key.properties file
         env:
@@ -43,12 +44,12 @@ jobs:
         run: |
           echo "::add-mask::$STORE_PASSWORD"
           echo "::add-mask::$KEY_PASSWORD"
-          printf 'storePassword="%s"\nkeyPassword="%s"\nkeyAlias="%s"\nstoreFile=../../wavepaths.keystore.jks\n' "$STORE_PASSWORD" "$KEY_PASSWORD" "$KEY_ALIAS" > android/key.properties
+          printf 'storePassword=%s\nkeyPassword=%s\nkeyAlias=%s\nstoreFile=../../wavepaths.keystore.jks\n' "$STORE_PASSWORD" "$KEY_PASSWORD" "$KEY_ALIAS" > android/key.properties
 
       - name: Flutter build
         run: flutter build appbundle --release
 
-      # TODO: add https://github.com/r0adkll/upload-google-play
+      # TODO: replace with Workload identity authentication https://github.com/r0adkll/upload-google-play
 
       - name: Cleanup sensitive files
         if: always()
