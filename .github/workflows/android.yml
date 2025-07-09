@@ -70,11 +70,9 @@ jobs:
 
       # TODO: replace with Workload identity authentication https://github.com/r0adkll/upload-google-play
       - name: Publish to Play Console
-        env:
-          SERVICE_ACCOUNT_JSON: ${{ secrets.SERVICE_ACCOUNT_JSON }}
         uses: r0adkll/upload-google-play@v1
         with:
-          serviceAccountJsonPlainText: "$SERVICE_ACCOUNT_JSON"
+          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
           packageName: "com.wavepaths.player"
           releaseFiles: "build/app/outputs/bundle/release/app-release.aab"
           track: "qa" # internal testing
