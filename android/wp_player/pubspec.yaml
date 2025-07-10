@@ -1,0 +1,67 @@
+name: wp_player
+description: "Wavepaths Player"
+# Prevents app from being published to pub.dev by using `flutter pub publish`
+publish_to: "none" # Don't remove this line
+
+version: 0.2.2+3 # Update both versionName (seen by user) and versionCode on new version
+
+environment:
+  sdk: ^3.7.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_hooks: ^0.21.2
+  ffi: ^2.1.4
+  flutter_riverpod: ^2.6.1
+  go_router: ^15.0.0
+  path_provider: ^2.1.5
+  synchronized: ^3.3.1
+  logger: ^2.5.0
+  shared_preferences: ^2.5.3
+  flutter_svg: ^2.1.0
+  flutter_screenutil: ^5.9.3
+  http: ^1.4.0
+  uuid: ^4.5.1
+  socket_io_client: ^1.0.0
+  cupertino_icons: ^1.0.8
+  permission_handler: ^12.0.0+1
+  mutex: ^3.1.0
+  app_links: ^6.4.0
+  hooks_riverpod: ^2.6.1
+  mobile_scanner: ^7.0.1 # check for IOS https://pub.dev/packages/mobile_scanner
+  loading_animation_widget: ^1.3.0
+  path: ^1.9.1
+  async: ^2.13.0
+  package_info_plus: ^8.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.3
+
+flutter_launcher_icons:
+  android: "app_icon"
+  image_path: "assets/icons/icon.jpg"
+  # ios: true # Uncomment this line if you want to generate iOS icons
+  windows:
+    generate: false # another one is used
+
+flutter:
+  uses-material-design: true
+  assets: # Not recursive - should include subfolders manually
+    - assets/audio/
+    - assets/images/
+    - assets/images/noise/
+    - assets/images/illustrations/
+    - assets/icons/
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-VariableFont.ttf
+        - asset: assets/fonts/Inter-Italic-VariableFont.ttf
+          style: italic
+    - family: DancingScript
+      fonts:
+        - asset: assets/fonts/DancingScript-VariableFont.ttf

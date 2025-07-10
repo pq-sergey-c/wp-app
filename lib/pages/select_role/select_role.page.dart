@@ -72,7 +72,7 @@ class SelectRolePage extends ConsumerWidget {
         ),
         child: SizedBox(
           width: layout.screenWidth,
-          height: max(layout.screenHeight - topPadding - bottomPadding, 700),
+          height: max(layout.screenHeight - topPadding - bottomPadding - layout.paddingTop, 700),
           child: const SelectRoleContent(),
         ),
       ),

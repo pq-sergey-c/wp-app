@@ -1,3 +1,5 @@
+#ifdef __ANDROID__
+
 #ifndef LOG_TAG
 #define LOG_TAG "MyApp"
 #include <android/log.h>
@@ -7,3 +9,5 @@
 
 #define printf LOGD
 #endif // LOG_TAG
+
+#endif // __ANDROID__

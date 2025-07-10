@@ -3,7 +3,9 @@ description: "Wavepaths Player"
 # Prevents app from being published to pub.dev by using `flutter pub publish`
 publish_to: "none" # Don't remove this line
 
-version: 0.2.2+3 # Update both versionName (seen by user) and versionCode on new version
+# Update both versionName (seen by user) and versionCode on new version
+# version: major.minor.patch+yyyymmddaa - where aa is two numbered version on this date
+version: 0.2.2+2025071001
 
 environment:
   sdk: ^3.7.0
@@ -20,7 +22,6 @@ dependencies:
   logger: ^2.5.0
   shared_preferences: ^2.5.3
   flutter_svg: ^2.1.0
-  flutter_screenutil: ^5.9.3
   http: ^1.4.0
   uuid: ^4.5.1
   socket_io_client: ^1.0.0

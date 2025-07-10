@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.22.1)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project(WpPlayerLibShared LANGUAGES C CXX)
 
@@ -15,7 +16,11 @@ if(NOT IS_ABSOLUTE "${CMAKE_INSTALL_PREFIX}")
 endif()
 
 # target
-add_library(${PROJECT_NAME} SHARED wp_host_main.cpp lib/dart_api_dl.c)
+add_library(${PROJECT_NAME} SHARED
+    wp_host_main.cpp
+    wrapper_parts/wp_wrapper_native_port.cpp
+    lib/dart_api_dl.c
+)
 
 # dart lib
 set(FLUTTER_LIB "lib/")
@@ -27,4 +32,4 @@ target_link_libraries(${PROJECT_NAME} PUBLIC WpPlayerLib)
 target_include_directories(${PROJECT_NAME} PRIVATE wp_player_lib)
 
 # options
-# set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-Wall -Wextra -Wpedantic -Werror") - due to Dart lib
+# set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-Wall -Wextra -Wpedantic -Werror") - due to Dart

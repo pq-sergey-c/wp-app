@@ -20,7 +20,7 @@ class SelectRoleContent extends HookConsumerWidget {
     final layout = ref.watch(responsiveLayoutProvider);
     final themeMode = ref.watch(themeModeProvider);
 
-    final getVersionFuture = useMemoized(() => PackageInfo.fromPlatform().then((result) => result.version));
+    final getVersionFuture = useMemoized(() => PackageInfo.fromPlatform().then((result) => result));
     final version = useFuture(getVersionFuture);
 
     final buttons = [
@@ -127,7 +127,7 @@ class SelectRoleContent extends HookConsumerWidget {
           ),
 
           Text(
-            version.data == null ? "" : "v.${version.data}",
+            version.data == null ? "" : "v.${version.data!.version} (${version.data!.buildNumber})",
             style: TextStyle(
               color: themeMode.themeConfig.text,
               fontSize: layout.getTextSize(TextSizes.xs),

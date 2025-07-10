@@ -22,12 +22,24 @@ class MainActivity : FlutterActivity() {
 
     // -------------------------------------------------------------
 
+    // FIXME: try to stop music player in other way - issue was reported on Samsung device
+    // With usage of new audio backend seems to also be found on
+    // Xiaomi 1.0.19.0.THGMIXM (Android 13 TKQ1.221114.001) - this device seems to have the bug
+    // consistently in such setup but personally not sure
+    // Reproducing:
+    //   - On playing music close app from resent - music still playing
+    // Debug and (fix attempts) info:
+    //   - Even on initially reported Samsung device just detached std::thread is been closed
+    //     (it stopped sending timed messages via udp to udp server)
+    //   - Sending message from onDestroy to Dart to stop via ffi - failed
+    //   - Checking/polling parent process id on detached thread - failed (thread was closed)
+    //   - Usage on std::atexit - failed
+    // Ideas to consider:
+    //   - Specifically for android make wrapper in Kotlin as a service - and use on close of
+    //     service to stop music
+    //   - Maybe investigate miniaudio and AAUDIO in native code
+
     private fun unsafeWorkaroundOnDestroy() {
-        // FIXME: try to stop music player in other way - issue was reported on Samsung device
-        // Reason:
-        //   to stop the native thread (by stopping entire process)
-        //   when Flutter activity is destroyed
-        //   This line is a problematic and should be replaced
         Process.killProcess(Process.myPid())
     }
 }

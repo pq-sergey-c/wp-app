@@ -104,7 +104,7 @@ elseif(ANDROID) # may be unneeded
     target_link_libraries(${PROJECT_NAME}
         log
         android
-        OpenSLES # comment to unlink old audio backend
+        # OpenSLES # uncomment to link to old audio backenda
     )
 elseif(WIN32)
     target_link_libraries(${PROJECT_NAME}

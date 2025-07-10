@@ -1,6 +1,7 @@
 # code editors
 .vscode
 .idea
+.build
 
 # flutter produced
 .flutter-plugins-dependencies
