@@ -1,0 +1,57 @@
+# TODO: add app signing and publishing to store(s)
+name: Wundows building
+on:
+  workflow_dispatch:
+  # uncomment to make it auto run on push
+  # push:
+  #   branches: [master]
+
+permissions:
+  contents: write
+  
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      # ----------------------------------------------------
+      # setup
+
+      - uses: actions/checkout@v4
+
+      - name: Add Dart (Flutter)
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Add Inno setup 6.4.0 (from Chocolatey)
+        run: choco install innosetup --version 6.4.0
+
+      # ----------------------------------------------------
+      # pre building and building
+
+      - name: Flutter build
+        run: flutter build windows --release
+
+      - name: Inno setup building
+        run: "C:/Program Files (x86)/Inno Setup 6/ISCC.exe windows/inno_setup_script.iss"
+
+      # ----------------------------------------------------
+      # publishing
+
+      - name: Get release version
+        id: version
+        run: echo "version=$(grep -Po '^\s*version:\s*\K\S+' pubspec.yaml | sed 's/+/./g')" >> "$GITHUB_OUTPUT"
+
+      - name: Warning
+        run: |
+          echo "::warning::Add to git release might have race condition between workflows - assess when have time" 
+        
+      - name: Add git release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "v.${{ steps.version.outputs.version }}"
+          name: "v.${{ steps.version.outputs.version }}"
+          files: "build/windows/installer/WavepathsInstaller_v.*.exe"
+
+      
