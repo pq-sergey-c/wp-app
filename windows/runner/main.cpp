@@ -74,7 +74,7 @@ wWinMain (_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev, _In_ wchar_t* comman
 
     FlutterWindow      window(project);
     Win32Window::Point origin(10, 10);
-    Win32Window::Size  size(1280, 720);
+    Win32Window::Size  size(1500, 850);
     if (!window.Create(WINDOW_NAME, origin, size)) {
         return EXIT_FAILURE;
     }

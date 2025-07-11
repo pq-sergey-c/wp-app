@@ -4,6 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:wp_player/pages/select_role/fragments/select_role_button.dart';
+import 'package:wp_player/pages/select_role/utils/make_version_string.dart';
 import 'package:wp_player/providers/responsive_layout/responsive_layout.provider.dart';
 import 'package:wp_player/providers/responsive_layout/types/enums/responsive_layout_text_sizes.dart';
 import 'package:wp_player/providers/theme_mode/theme_mode.provider.dart';
@@ -127,7 +128,7 @@ class SelectRoleContent extends HookConsumerWidget {
           ),
 
           Text(
-            version.data == null ? "" : "v.${version.data!.version} (${version.data!.buildNumber})",
+            makeVersionString(version.data) ?? "",
             style: TextStyle(
               color: themeMode.themeConfig.text,
               fontSize: layout.getTextSize(TextSizes.xs),

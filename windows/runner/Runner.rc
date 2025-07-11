@@ -60,10 +60,10 @@ IDI_APP_ICON            ICON                    "resources\\app_icon.ico"
 // Version
 //
 
-#if defined(FLUTTER_VERSION_MAJOR) && defined(FLUTTER_VERSION_MINOR) && defined(FLUTTER_VERSION_PATCH) && defined(FLUTTER_VERSION_BUILD)
-#define VERSION_AS_NUMBER FLUTTER_VERSION_MAJOR,FLUTTER_VERSION_MINOR,FLUTTER_VERSION_PATCH,FLUTTER_VERSION_BUILD
+#if defined(FLUTTER_VERSION_MAJOR) && defined(FLUTTER_VERSION_MINOR) && defined(FLUTTER_VERSION_PATCH)
+#define VERSION_AS_NUMBER FLUTTER_VERSION_MAJOR,FLUTTER_VERSION_MINOR,FLUTTER_VERSION_PATCH,0
 #else
-#define VERSION_AS_NUMBER 1,0,0,0
+#error "VERSION_AS_NUMBER failed to be defined"
 #endif
 
 // -------------------------------------------------------
@@ -73,12 +73,15 @@ IDI_APP_ICON            ICON                    "resources\\app_icon.ico"
 #define STRINGIFY(x) _TO_STRING_NO_EXPANSION(x) // expands macros in x before stringifying (if it is one)
 
 #if defined(FLUTTER_VERSION_MAJOR) && defined(FLUTTER_VERSION_MINOR) && defined(FLUTTER_VERSION_PATCH) && defined(FLUTTER_VERSION_BUILD)
-#define VERSION_AS_STRING STRINGIFY(FLUTTER_VERSION_MAJOR) "." \
+#define PRODUCT_VERSION_AS_STRING STRINGIFY(FLUTTER_VERSION_MAJOR) "." \
                           STRINGIFY(FLUTTER_VERSION_MINOR) "." \
                           STRINGIFY(FLUTTER_VERSION_PATCH) "." \
                           STRINGIFY(FLUTTER_VERSION_BUILD)
+#define FILE_VERSION_AS_STRING STRINGIFY(FLUTTER_VERSION_MAJOR) "." \
+                          STRINGIFY(FLUTTER_VERSION_MINOR) "." \
+                          STRINGIFY(FLUTTER_VERSION_PATCH)
 #else
-#define VERSION_AS_STRING "1.0.0"
+#error "*_VERSION_AS_STRING failed to be defined"
 #endif
 // -------------------------------------------------------
 
@@ -102,12 +105,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "com.wavepaths.player" "\0"
             VALUE "FileDescription", "Wavepaths" "\0"
-            VALUE "FileVersion", VERSION_AS_STRING "\0"
+            VALUE "FileVersion", FILE_VERSION_AS_STRING "\0"
             VALUE "InternalName", "wp_player" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2025 Wavepaths. All rights reserved." "\0"
             VALUE "OriginalFilename", "Wavepaths.exe" "\0"
             VALUE "ProductName", "Wavepaths" "\0"
-            VALUE "ProductVersion", VERSION_AS_STRING "\0"
+            VALUE "ProductVersion", PRODUCT_VERSION_AS_STRING "\0"
         END
     END
     BLOCK "VarFileInfo"
