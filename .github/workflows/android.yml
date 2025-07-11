@@ -1,7 +1,9 @@
 name: "Android build" # TODO: add and deploy (when and if applicable)
 on:
-  push:
-    branches: [master]
+  workflow_dispatch:
+  # uncomment to make it auto run on push
+  # push:
+  #   branches: [master]
 
 permissions:
   contents: read
@@ -76,6 +78,17 @@ jobs:
           packageName: "com.wavepaths.player"
           releaseFiles: "build/app/outputs/bundle/release/app-release.aab"
           track: "internal"
+          status: "draft" # remove this once published
+      
+      - name: "Reminder: Manual publish needed"
+        run: |
+          echo "::warning::Uploaded to internal track to Play Console as a DRAFT"
+          echo "::warning::To make this release available to testers:"
+          echo "::warning::  1. Go to Google Play Console -> 'Internal Testing' -> 'Releases'"
+          echo "::warning::  2. Click 'Edit release' and manually publish it there"
+          echo "::warning::If the app is already published:"
+          echo "::warning::  You can update the workflow to remove draft status upload into internal testing"
+          echo "::warning::  This will make uploads propagated without need in manual accepting"
 
       - name: Add git release
         uses: softprops/action-gh-release@v2
