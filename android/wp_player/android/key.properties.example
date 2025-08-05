@@ -1,4 +1,0 @@
-storePassword=
-keyPassword=
-keyAlias=
-storeFile=ABSOLUTE_PATH/TO_KEY/OUTSIDE_OF_PROJECT_FOLDER
