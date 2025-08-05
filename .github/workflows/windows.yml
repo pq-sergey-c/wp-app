@@ -1,5 +1,5 @@
 # TODO: add app signing and publishing to store(s)
-name: Wundows building
+name: Windows build
 on:
   workflow_dispatch:
   # uncomment to make it auto run on push
