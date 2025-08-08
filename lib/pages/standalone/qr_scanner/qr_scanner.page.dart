@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -30,7 +31,7 @@ class QrScannerPage extends HookConsumerWidget {
     ).animate(CurvedAnimation(parent: animationController, curve: Curves.linear));
 
     final scannerConfig = useMemoized(MobileScannerController.new, []);
-    useOnPagePop(ref, onPop: scannerConfig.dispose);
+    useOnPagePop(ref, initialCanPop: true, afterPopped: () => unawaited(scannerConfig.dispose()));
 
     return Stack(
       children: [

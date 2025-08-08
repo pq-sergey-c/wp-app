@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:wp_player/pages/select_role/fragments/select_role_button.dart';
+import 'package:wp_player/components/controls/button.dart';
 import 'package:wp_player/pages/select_role/utils/make_version_string.dart';
 import 'package:wp_player/providers/responsive_layout/responsive_layout.provider.dart';
 import 'package:wp_player/providers/responsive_layout/types/enums/responsive_layout_text_sizes.dart';
 import 'package:wp_player/providers/theme_mode/theme_mode.provider.dart';
-import 'package:wp_player/styles/colors/colors.dart';
 import 'package:wp_player/styles/fonts/fonts.dart';
 import 'package:wp_player/types/font_variation/font_variation_weight.dart';
 import 'package:wp_player/types/session/user_role/user_role.dart';
@@ -24,16 +24,69 @@ class SelectRoleContent extends HookConsumerWidget {
     final getVersionFuture = useMemoized(() => PackageInfo.fromPlatform().then((result) => result));
     final version = useFuture(getVersionFuture);
 
-    final buttons = [
-      SelectRoleButton(
-        imagePath: 'assets/images/illustrations/listener_illustration.png',
-        label: "I am a Listener",
-        goToOnClickRoute: '/connect/${UserRole.listener.value}',
+    final mainButtons = [
+      Button(
+        onClicked: () => context.push('/connect/${UserRole.provider.value}'),
+        text: "I am a Provider",
+        height: layout.isDesktop ? layout.getClampedHeight(percent: 12, max: 90, min: 70) : null,
+        textStyle: TextStyle(
+          fontSize: layout.selectByScreenType(
+            desktop: layout.getTextSize(TextSizes.xl),
+            orElse: layout.getTextSize(TextSizes.normal),
+          ),
+          fontFamily: themeMode.themeConfig.fontFamily,
+          color: themeMode.themeConfig.onPrimary,
+          fontVariations: [FontVariationWeight.w600()],
+        ),
       ),
-      SelectRoleButton(
-        imagePath: 'assets/images/illustrations/provider_illustration.png',
-        label: "I am a Provider",
-        goToOnClickRoute: '/connect/${UserRole.provider.value}',
+      Button(
+        onClicked: () => context.push('/connect/${UserRole.listener.value}'),
+        text: "I am a Listener",
+        height: layout.isDesktop ? layout.getClampedHeight(percent: 12, max: 90, min: 70) : null,
+        textStyle: TextStyle(
+          fontSize: layout.selectByScreenType(
+            desktop: layout.getTextSize(TextSizes.xl),
+            orElse: layout.getTextSize(TextSizes.normal),
+          ),
+          fontFamily: themeMode.themeConfig.fontFamily,
+          color: themeMode.themeConfig.onPrimary,
+          fontVariations: [FontVariationWeight.w600()],
+        ),
+      ),
+    ];
+
+    final secondaryButtons = [
+      Button(
+        // TODO: add button subtype maybe for buttonStyle values
+        onClicked: () => context.push('/learn_more'),
+        text: "Learn More",
+        height: layout.isDesktop ? layout.getClampedHeight(percent: 12, max: 90, min: 70) : null,
+        textStyle: TextStyle(
+          fontSize: layout.selectByScreenType(
+            desktop: layout.getTextSize(TextSizes.xl),
+            orElse: layout.getTextSize(TextSizes.normal),
+          ),
+          fontFamily: themeMode.themeConfig.fontFamily,
+          color: themeMode.getColorByMode(dark: themeMode.themeConfig.onPrimary, light: themeMode.themeConfig.primary),
+          fontVariations: [FontVariationWeight.w600()],
+        ),
+        buttonStyle: ButtonStyle(
+          backgroundColor: WidgetStateProperty.all<Color>(themeMode.themeConfig.background),
+          side: WidgetStateProperty.all<BorderSide>(
+            BorderSide(
+              color: themeMode.getColorByMode(
+                dark: themeMode.themeConfig.onPrimary,
+                light: themeMode.themeConfig.primary,
+              ),
+            ),
+          ),
+          overlayColor: WidgetStateProperty.all<Color>(
+            themeMode.getColorByMode(
+              dark: const Color.fromARGB(67, 67, 69, 91), // TODO: Move to app colors
+              light: const Color.fromARGB(118, 217, 217, 222),
+            ),
+          ),
+        ),
       ),
     ];
 
@@ -52,78 +105,37 @@ class SelectRoleContent extends HookConsumerWidget {
             ),
           ),
 
-          ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: layout.selectByScreenType(
-                mobile: layout.getClampedWidth(percent: 75),
-                orElse: layout.getClampedWidth(percent: 60),
-              ),
-            ),
-            child: Text(
-              "Helps you enter a state of calm and self-reflection",
-              style: TextStyle(
-                fontFamily: Fonts.dancingScript,
-                fontSize: layout.selectByScreenType(
-                  mobile: layout.getTextSize(TextSizes.xl3),
-                  tablet: layout.getTextSize(TextSizes.xl4),
-                  desktop: layout.getTextSize(TextSizes.xl5),
-                ),
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-
-          Text.rich(
+          Text(
+            "This app lets you stream Wavepaths music with optimal audio quality and playback stability",
             textAlign: TextAlign.center,
-            TextSpan(
-              style: TextStyle(
-                fontFamily: Fonts.inter,
-                fontSize: layout.getTextSize(TextSizes.sm),
-                color: themeMode.themeConfig.subtext,
+            style: TextStyle(
+              fontVariations: [FontVariationWeight.w400()],
+              letterSpacing: 0,
+              wordSpacing: -1,
+              color: themeMode.themeConfig.subtext,
+              fontSize: layout.selectByScreenType(
+                mobile: layout.getTextSize(TextSizes.sm),
+                orElse: layout.getTextSize(TextSizes.lg),
               ),
-              children: [
-                const TextSpan(text: "Please note: To ensure best audio quality and stability, this app is "),
-                TextSpan(
-                  text: 'only ',
-                  style: TextStyle(fontVariations: [FontVariationWeight.w700()], fontStyle: FontStyle.italic),
-                ),
-                const TextSpan(text: "for streaming music"),
-              ],
             ),
           ),
 
           layout.selectByScreenType(
-            mobile: Column(spacing: 32, children: buttons),
-            orElse: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              spacing: layout.getClampedWidth(percent: 5),
-              children: buttons,
+            mobile: Column(
+              spacing: 32,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: mainButtons + secondaryButtons,
             ),
-          ),
-
-          ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: layout.getClampedWidth(percent: 50, min: 200)),
-            child: RichText(
-              textAlign: TextAlign.center,
-              text: TextSpan(
-                text: "Try Wavepaths for free ",
-                style: TextStyle(
-                  fontFamily: Fonts.inter,
-                  fontSize: layout.getTextSize(TextSizes.normal),
-                  color: themeMode.themeConfig.text,
+            orElse: Column(
+              spacing: 32,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  spacing: layout.getClampedWidth(percent: 3),
+                  children: mainButtons.map((button) => Expanded(child: button)).toList(),
                 ),
-
-                children: const [
-                  TextSpan(
-                    text: "(no card details needed)",
-                    style: TextStyle(
-                      decoration: TextDecoration.underline,
-                      decorationColor: AppColors.yellowAmber,
-                      decorationThickness: 2,
-                    ),
-                  ),
-                ],
-              ),
+                Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: secondaryButtons),
+              ],
             ),
           ),
 

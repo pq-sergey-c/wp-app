@@ -6,6 +6,7 @@ import 'package:wp_player/providers/theme_mode/theme_mode.provider.dart';
 import 'package:wp_player/styles/colors/colors.dart';
 import 'package:wp_player/types/font_variation/font_variation_weight.dart';
 import 'package:wp_player/types/session/session_info/session_info.dart';
+import 'package:wp_player/types/session/user_role/user_role.dart';
 
 class TrackInfoDetails extends ConsumerWidget {
   final SessionInfo sessionInfo;
@@ -80,20 +81,22 @@ class TrackInfoDetails extends ConsumerWidget {
             ],
           ),
 
-          Padding(
-            padding: const EdgeInsets.only(top: 4.0), // TODO: find solution without padding
-            child: Text(
-              sessionInfo.deviceInfo,
-              style: TextStyle(
-                fontSize: layout.getTextSize(TextSizes.normal),
-                color: themeMode.themeConfig.subtext,
-                fontVariations: [FontVariationWeight.w600()],
+          if (sessionInfo.userRole == UserRole.provider) ...{
+            Padding(
+              padding: const EdgeInsets.only(top: 4.0), // TODO: find solution without padding
+              child: Text(
+                sessionInfo.deviceInfo,
+                style: TextStyle(
+                  fontSize: layout.getTextSize(TextSizes.normal),
+                  color: themeMode.themeConfig.subtext,
+                  fontVariations: [FontVariationWeight.w600()],
+                ),
               ),
             ),
-          ),
+          },
 
           Text(
-            sessionInfo.description,
+            sessionInfo.sessionDescription,
             style: TextStyle(fontSize: layout.getTextSize(TextSizes.normal), color: themeMode.themeConfig.subtext),
           ),
         ],

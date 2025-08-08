@@ -49,12 +49,12 @@ class ConnectPageActionLink extends HookConsumerWidget {
       spacing: layout.getClampedHeight(percent: 3, min: 20),
       children: [
         SizedBox(
-          width: layout.getClampedWidth(percent: 80, max: 430),
+          width: layout.getClampedWidth(percent: 80, max: 500),
           height: layout.getClampedHeight(percent: 9, min: 65),
           child: TextInput(inputController: inputController, labelText: 'Insert link'),
         ),
         Button(
-          width: layout.getClampedWidth(percent: 80, max: 430),
+          width: layout.getClampedWidth(percent: 80, max: 500),
           height: layout.getClampedHeight(percent: 9, min: 55),
           onClicked: () async => await onSubmitClicked(),
           text: 'Submit',

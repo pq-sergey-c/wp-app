@@ -47,7 +47,7 @@ class ConnectPageActionScanner extends HookConsumerWidget {
     return Button(
       onClicked: () async => await onScanClicked(),
       text: 'Scan QR code',
-      width: layout.getClampedWidth(percent: 80, max: 430),
+      width: layout.getClampedWidth(percent: 80, max: 500),
       height: layout.getClampedHeight(percent: 9, min: 60),
     );
   }

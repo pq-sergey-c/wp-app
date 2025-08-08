@@ -14,7 +14,6 @@ import 'package:wp_player/pages/select_role/types/connect_page_show_popup.dart';
 import 'package:wp_player/providers/popup/popup.provider.dart';
 import 'package:wp_player/providers/responsive_layout/responsive_layout.provider.dart';
 import 'package:wp_player/services/player/player.service.dart';
-import 'package:wp_player/types/font_variation/font_variation_weight.dart';
 import 'package:wp_player/utils/logger/logger.dart';
 
 class SelectRolePage extends ConsumerWidget {
@@ -32,7 +31,7 @@ class SelectRolePage extends ConsumerWidget {
       orElse: layout.getClampedHeight(percent: 5, min: 15),
     ); // based on top position of home button
     const double bottomPadding = 8;
-    final double horizontalPadding = layout.getClampedWidth(percent: 8, max: 50);
+    final double horizontalPadding = layout.getClampedWidth(percent: 7, max: 50);
 
     // Deeplinking
     SelectRolePageCloseLoadingPopupCallback showLoadingPopup() {
@@ -42,17 +41,14 @@ class SelectRolePage extends ConsumerWidget {
     Future<void> showFailPopup({required String correctnessOf}) {
       return popup.addPopupNotification(
         title: "Failed to connect to server",
-        buttonText: "Understood",
-        message: TextSpan(
+        buttonText: "I understand",
+        message: const TextSpan(
           children: [
-            const TextSpan(text: 'Please check whether the '),
-            TextSpan(text: correctnessOf, style: TextStyle(fontVariations: [FontVariationWeight.w600()])),
-            const TextSpan(text: ' is correct and ensure your '),
-            TextSpan(text: 'internet connection', style: TextStyle(fontVariations: [FontVariationWeight.w600()])),
-            const TextSpan(text: " is stable\n\nIt's also possible that the "),
-            TextSpan(text: 'server', style: TextStyle(fontVariations: [FontVariationWeight.w600()])),
-            const TextSpan(text: ' is temporarily unavailable, so if the issue persists, please '),
-            TextSpan(text: 'try again later', style: TextStyle(fontVariations: [FontVariationWeight.w600()])),
+            TextSpan(
+              text:
+                  'In rare cases it is possible that the server is temporarily unavailable. '
+                  'If this does not resolve within 5-10 minutes, please contact us via support@wavepaths.com',
+            ),
           ],
         ),
       );
@@ -72,7 +68,7 @@ class SelectRolePage extends ConsumerWidget {
         ),
         child: SizedBox(
           width: layout.screenWidth,
-          height: max(layout.screenHeight - topPadding - bottomPadding - layout.paddingTop, 700),
+          height: max(layout.screenHeight - topPadding - bottomPadding - layout.paddingTop, 550),
           child: const SelectRoleContent(),
         ),
       ),

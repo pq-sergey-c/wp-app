@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:wp_player/services/player.native_lib/types/phase.native_lib.dart';
 import 'package:wp_player/types/session/session_info/session_info.dart';
+import 'package:wp_player/types/session/user_role/user_role.dart';
 
 /// Coupled with player.native_lib service
 /// and via it, also, indirectly, with network.service service
@@ -45,4 +46,6 @@ abstract class IPlayerService {
   void reportConnectionRestored();
 
   ValueListenable<bool>? get isConnectionInterruptedListenable;
+
+  set streamingType(UserRole userRole); // TODO: remove once this info is obtained from link / QR
 }

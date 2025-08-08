@@ -1,5 +1,5 @@
 enum SessionRenderType {
-  realTime("realTime"),
+  realTime("realTime"), // deprecated value
   preRendered("preRendered"),
   predictiveComposed("predictiveComposed");
 
@@ -22,7 +22,7 @@ enum SessionRenderType {
 }
 
 const Map<SessionRenderType, String> _sessionRenderTypeReadableNameByRenderTypeMap = {
-  SessionRenderType.preRendered: 'Pre-rendered',
-  SessionRenderType.predictiveComposed: 'Predictive composed',
+  SessionRenderType.preRendered: 'Pre-recorded',
+  SessionRenderType.predictiveComposed: 'Live',
   SessionRenderType.realTime: 'Real time',
 };

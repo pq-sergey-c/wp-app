@@ -32,6 +32,26 @@ class PopupYesNo extends ConsumerWidget {
         child: Row(
           spacing: 20,
           children: [
+            // No button
+            Expanded(
+              child: Button(
+                onClicked: config.noCallback,
+                text: config.noText,
+                textStyle: TextStyle(
+                  fontSize: layout.getTextSize(TextSizes.normal),
+                  fontFamily: themeMode.themeConfig.fontFamily,
+                  color: themeMode.themeConfig.onPrimary,
+                  fontVariations: [FontVariationWeight.w700()],
+                ),
+                buttonStyle: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.all<Color>(themeMode.themeConfig.primary),
+                  shape: WidgetStatePropertyAll<OutlinedBorder>(
+                    RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(16)),
+                  ),
+                ),
+              ),
+            ),
+
             // Yes button
             Expanded(
               child: Button(
@@ -55,26 +75,6 @@ class PopupYesNo extends ConsumerWidget {
                         dark: BorderSide(color: themeMode.themeConfig.primary, width: 2),
                       ),
                     ),
-                  ),
-                ),
-              ),
-            ),
-
-            // No button
-            Expanded(
-              child: Button(
-                onClicked: config.noCallback,
-                text: config.noText,
-                textStyle: TextStyle(
-                  fontSize: layout.getTextSize(TextSizes.normal),
-                  fontFamily: themeMode.themeConfig.fontFamily,
-                  color: themeMode.themeConfig.onPrimary,
-                  fontVariations: [FontVariationWeight.w700()],
-                ),
-                buttonStyle: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all<Color>(themeMode.themeConfig.primary),
-                  shape: WidgetStatePropertyAll<OutlinedBorder>(
-                    RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(16)),
                   ),
                 ),
               ),

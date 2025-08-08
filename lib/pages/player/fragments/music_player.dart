@@ -54,14 +54,14 @@ class MusicPlayerPage extends HookConsumerWidget {
               totalTime: formatDuration(duration, withHours: isTimeWithHours),
             ),
 
-            SizedBox(height: layout.getClampedHeight(percent: 3.5)),
+            SizedBox(height: layout.getClampedHeight(percent: 3)),
 
             SectionTitle(title: sessionInfo.title),
 
-            SizedBox(height: layout.getClampedHeight(percent: 3.5)),
+            SizedBox(height: layout.getClampedHeight(percent: 3)),
 
             ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: layout.getClampedHeight(percent: 45, min: 300)),
+              constraints: BoxConstraints(maxWidth: layout.getClampedHeight(percent: 42, min: 300)),
               child: TrackInfoCard(
                 sessionInfo: sessionInfo,
                 isExpanded: isExpanded.value,
@@ -69,10 +69,10 @@ class MusicPlayerPage extends HookConsumerWidget {
               ),
             ),
 
-            SizedBox(height: layout.getClampedHeight(percent: 3.5)),
+            SizedBox(height: layout.getClampedHeight(percent: 3)),
 
             ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: layout.getClampedHeight(percent: 45, min: 300)),
+              constraints: BoxConstraints(maxWidth: layout.getClampedHeight(percent: 42, min: 300)),
               child: PlayerControl(
                 isPlaying: isPlaying,
                 onPlayPausePressed: togglePlay,
@@ -81,14 +81,14 @@ class MusicPlayerPage extends HookConsumerWidget {
               ),
             ),
 
-            SizedBox(height: layout.getClampedHeight(percent: 3.5)),
+            SizedBox(height: layout.getClampedHeight(percent: 3)),
 
             SizedBox(
-              width: layout.getClampedHeight(percent: 45, min: 300),
+              width: layout.getClampedHeight(percent: 42, min: 300),
               child: VolumeSlider(startVolume: volume, onVolumeChanged: onVolumeChange),
             ),
 
-            SizedBox(height: layout.getClampedHeight(percent: 9)),
+            SizedBox(height: layout.getClampedHeight(percent: 6.5)),
 
             const WavePathsLogo(),
 

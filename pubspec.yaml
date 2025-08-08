@@ -5,7 +5,7 @@ publish_to: "none" # Don't remove this line
 
 # Update both versionName (seen by user) and versionCode on new version
 # version: major.minor.patch+yyyymmddaa - where aa is two numbered version on this date
-version: 0.2.2+2025071001
+version: 0.2.2+2025080701
 
 environment:
   sdk: ^3.7.0
@@ -35,6 +35,7 @@ dependencies:
   path: ^1.9.1
   async: ^2.13.0
   package_info_plus: ^8.3.0
+  url_launcher: ^6.3.2 # check for IOS https://pub.dev/packages/url_launcher
 
 dev_dependencies:
   flutter_test:
@@ -44,7 +45,7 @@ dev_dependencies:
 
 flutter_launcher_icons:
   android: "app_icon"
-  image_path: "assets/icons/icon.jpg"
+  image_path: "assets/icons/icon.png"
   # ios: true # Uncomment this line if you want to generate iOS icons
   windows:
     generate: false # another one is used
@@ -63,6 +64,3 @@ flutter:
         - asset: assets/fonts/Inter-VariableFont.ttf
         - asset: assets/fonts/Inter-Italic-VariableFont.ttf
           style: italic
-    - family: DancingScript
-      fonts:
-        - asset: assets/fonts/DancingScript-VariableFont.ttf

@@ -4,11 +4,12 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:wp_player/components/containers/scrollable_page_shell.dart';
+import 'package:wp_player/core/qr_scanner/qr_scanner.service.dart';
 import 'package:wp_player/pages/connect_page/fragments/connect_page_content.dart';
 import 'package:wp_player/pages/connect_page/types/connect_page_show_popup.dart';
 import 'package:wp_player/providers/popup/popup.provider.dart';
 import 'package:wp_player/providers/responsive_layout/responsive_layout.provider.dart';
-import 'package:wp_player/types/font_variation/font_variation_weight.dart';
+import 'package:wp_player/services/player/player.service.dart';
 import 'package:wp_player/types/session/user_role/user_role.dart';
 
 class ConnectPage extends HookConsumerWidget {
@@ -18,8 +19,12 @@ class ConnectPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    PlayerService().streamingType = userRole; // TODO: remove once been obtained from link/QR
+
     final layout = ref.watch(responsiveLayoutProvider);
     final popup = ref.watch(popupProvider.notifier);
+
+    final isScanner = isQRScannerSupportedOnPlatform();
 
     // Popups
     ConnectPageCloseLoadingPopupCallback showLoadingPopup() {
@@ -29,17 +34,14 @@ class ConnectPage extends HookConsumerWidget {
     Future<void> showFailPopup({required String correctnessOf}) {
       return popup.addPopupNotification(
         title: "Failed to connect to server",
-        buttonText: "Understood",
-        message: TextSpan(
+        buttonText: "I understand",
+        message: const TextSpan(
           children: [
-            const TextSpan(text: 'Please check whether the '),
-            TextSpan(text: correctnessOf, style: TextStyle(fontVariations: [FontVariationWeight.w600()])),
-            const TextSpan(text: ' is correct and ensure your '),
-            TextSpan(text: 'internet connection', style: TextStyle(fontVariations: [FontVariationWeight.w600()])),
-            const TextSpan(text: " is stable\n\nIt's also possible that the "),
-            TextSpan(text: 'server', style: TextStyle(fontVariations: [FontVariationWeight.w600()])),
-            const TextSpan(text: ' is temporarily unavailable, so if the issue persists, please '),
-            TextSpan(text: 'try again later', style: TextStyle(fontVariations: [FontVariationWeight.w600()])),
+            TextSpan(
+              text:
+                  'In rare cases it is possible that the server is temporarily unavailable. '
+                  'If this does not resolve within 5-10 minutes, please contact us via support@wavepaths.com',
+            ),
           ],
         ),
       );
@@ -65,7 +67,10 @@ class ConnectPage extends HookConsumerWidget {
           width: layout.screenWidth,
           height: max(
             layout.screenHeight - bottomPadding - layout.paddingTop - topPadding,
-            layout.selectByScreenType(desktop: 500, orElse: 600),
+            layout.selectByScreenType(
+              desktop: 500,
+              orElse: 700 + (isScanner ? 0 : 60) + (userRole == UserRole.provider ? 60 : 0),
+            ),
           ),
           child: ConnectPageContent(
             showLoadingPopup: showLoadingPopup,

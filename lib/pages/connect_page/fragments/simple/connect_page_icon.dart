@@ -17,9 +17,9 @@ class ConnectPageIcon extends ConsumerWidget {
     final layout = ref.watch(responsiveLayoutProvider);
 
     final iconSize = min(
-      layout.getClampedWidth(percent: 20),
-      layout.getClampedHeight(percent: isSmallVariant ? 9 : 15),
-    ).clamp(layout.widthBreakpoints<double>([(item: 70, maxWidth: 900)], fallback: 90), isSmallVariant ? 90.0 : 110.0);
+      layout.getClampedWidth(percent: 10),
+      layout.getClampedHeight(percent: isSmallVariant ? 8 : 10),
+    ).clamp(60.0, 70.0);
 
     return Container(
       width: iconSize,
@@ -30,8 +30,8 @@ class ConnectPageIcon extends ConsumerWidget {
       ),
       child: Align(
         child: SvgPicture.asset(
-          width: iconSize / 2.5,
-          height: iconSize / 2.5,
+          width: iconSize / 1.5,
+          height: iconSize / 1.5,
           iconPath,
           colorFilter: const ColorFilter.mode(AppColors.blueIron, BlendMode.srcIn),
         ),

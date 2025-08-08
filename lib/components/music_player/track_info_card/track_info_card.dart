@@ -26,7 +26,11 @@ class TrackInfoCard extends ConsumerWidget {
       clipBehavior: Clip.antiAliasWithSaveLayer,
       child: Column(
         children: [
-          TrackInfoHeader(isExpanded: isExpanded, onTap: onExpandToggle, sessionType: sessionInfo.sessionType),
+          TrackInfoHeader(
+            isExpanded: isExpanded,
+            onTap: onExpandToggle,
+            sessionType: sessionInfo.sessionType.getReadableName,
+          ),
           ClipRect(
             child: AnimatedSize(
               duration: const Duration(milliseconds: 400),

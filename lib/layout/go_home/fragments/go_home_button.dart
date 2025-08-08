@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:wp_player/providers/go_home_callback/go_home_callback.provider.dart';
 import 'package:wp_player/providers/responsive_layout/responsive_layout.provider.dart';
 import 'package:wp_player/providers/theme_mode/theme_mode.provider.dart';
 import 'package:wp_player/styles/colors/colors.dart';
@@ -14,6 +15,21 @@ class GoHomeButton extends ConsumerWidget {
     final themeMode = ref.watch(themeModeProvider);
     final layout = ref.watch(responsiveLayoutProvider);
 
+    Future<void> onTap() async {
+      final canGoHomeCallback = ref.read(goHomeCallbackProvider);
+
+      if (canGoHomeCallback == null) {
+        context.go('/');
+        return;
+      }
+
+      final canGoHomeResult = await canGoHomeCallback();
+      if (!canGoHomeResult.canGoHome) return;
+
+      ref.read(goHomeCallbackProvider.notifier).state = null;
+      if (context.mounted) context.go('/');
+    }
+
     return Positioned(
       left: layout.selectByScreenType(mobile: -5, orElse: 0),
       top: layout.selectByScreenType(
@@ -23,7 +39,7 @@ class GoHomeButton extends ConsumerWidget {
       child: Material(
         color: AppColors.transparent,
         child: InkWell(
-          onTap: () => context.go('/'),
+          onTap: onTap,
           borderRadius: const BorderRadius.horizontal(right: Radius.circular(32)),
           child: Container(
             width: layout.getClampedWidth(percent: 5, min: 56),

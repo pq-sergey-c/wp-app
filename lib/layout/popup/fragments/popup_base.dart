@@ -43,7 +43,7 @@ class PopupBase extends ConsumerWidget {
           child: Container(
             constraints: BoxConstraints(
               maxWidth: layout.getClampedWidth(percent: 90, max: 500),
-              maxHeight: layout.getClampedHeight(percent: 60, max: 800, min: 700),
+              maxHeight: layout.getClampedHeight(percent: 60, min: 700),
               minHeight: layout.getClampedHeight(
                 percent: layout.selectByScreenType(mobile: 25, orElse: 28),
                 max: 275,
@@ -88,7 +88,7 @@ class PopupBase extends ConsumerWidget {
 
                 // Message
                 ConstrainedBox(
-                  constraints: BoxConstraints(maxHeight: layout.getClampedHeight(percent: 25, min: 20)),
+                  constraints: BoxConstraints(maxHeight: layout.getClampedHeight(percent: 40, min: 20)),
                   child: ScrollConfiguration(
                     behavior: pageScrollBehaviorWithScrollBar,
                     child: Scrollbar(

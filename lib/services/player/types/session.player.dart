@@ -1,4 +1,4 @@
-import 'package:wp_player/services/player/types/enums/session_render_type.player.dart';
+import 'package:wp_player/types/session/session_render_type.player.dart';
 import 'package:wp_player/services/player/types/sub_types/session_broadcast_state.player.dart';
 import 'package:wp_player/services/player/types/sub_types/session_score.player.dart';
 import 'package:wp_player/services/player/types/sub_types/session_variable_inputs.player.dart';

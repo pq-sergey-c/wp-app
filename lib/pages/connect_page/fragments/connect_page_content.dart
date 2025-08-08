@@ -2,8 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:wp_player/pages/connect_page/fragments/action/connect_page_action.dart';
+import 'package:wp_player/pages/connect_page/fragments/additional_info/additional_info.dart';
 import 'package:wp_player/pages/connect_page/fragments/instruction/connect_page_instruction.dart';
-import 'package:wp_player/pages/connect_page/fragments/please_note_text/please_note_text.dart';
 import 'package:wp_player/pages/connect_page/types/connect_page_show_popup.dart';
 import 'package:wp_player/providers/responsive_layout/responsive_layout.provider.dart';
 import 'package:wp_player/providers/responsive_layout/types/enums/responsive_layout_text_sizes.dart';
@@ -35,7 +35,7 @@ class ConnectPageContent extends ConsumerWidget {
 
     return Column(
       mainAxisAlignment: alignment,
-      spacing: 10,
+      spacing: 20,
       children: [
         Container(
           padding: EdgeInsetsGeometry.only(top: layout.getClampedHeight(percent: 1.5, min: 10)),
@@ -49,16 +49,12 @@ class ConnectPageContent extends ConsumerWidget {
         ),
 
         ...layout.heightBreakpoints(
-          [(maxHeight: 575, item: [])],
+          [(maxHeight: 750, item: [])],
           fallback: [
             Text(
-              userRole == UserRole.listener ? "Start listening" : "Start streaming as a provider",
+              userRole == UserRole.listener ? "Start streaming as a Listener" : "Start streaming as a Provider",
               style: TextStyle(
-                fontSize: layout.getTextSize(
-                  userRole == UserRole.listener
-                      ? TextSizes.xl3
-                      : layout.selectByScreenType(desktop: TextSizes.xl3, orElse: TextSizes.xl2),
-                ),
+                fontSize: layout.getTextSize(layout.selectByScreenType(desktop: TextSizes.xl2, orElse: TextSizes.xl)),
                 fontVariations: [FontVariationWeight.w700()],
               ),
               textAlign: TextAlign.center,
@@ -67,30 +63,8 @@ class ConnectPageContent extends ConsumerWidget {
         ),
 
         ConnectPageInstruction(userRole: userRole),
-
-        ...layout.heightBreakpoints(
-          [
-            (
-              maxHeight: 750,
-              item: [ConnectPageAction(showLoadingPopup: showLoadingPopup, showFailPopup: showFailPopup)],
-            ),
-          ],
-          fallback: layout.widthBreakpoints(
-            [
-              (
-                maxWidth: 900,
-                item: [
-                  PleaseNoteText(userRole: userRole),
-                  ConnectPageAction(showLoadingPopup: showLoadingPopup, showFailPopup: showFailPopup),
-                ],
-              ),
-            ],
-            fallback: [
-              ConnectPageAction(showLoadingPopup: showLoadingPopup, showFailPopup: showFailPopup),
-              PleaseNoteText(userRole: userRole),
-            ],
-          ),
-        ),
+        AdditionalInfo(userRole: userRole),
+        ConnectPageAction(showLoadingPopup: showLoadingPopup, showFailPopup: showFailPopup),
       ],
     );
   }

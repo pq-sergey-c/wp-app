@@ -8,12 +8,13 @@ import 'package:wp_player/services/player/link_parser/parse_link.dart';
 import 'package:wp_player/services/player/network/fetch_session.dart';
 import 'package:wp_player/services/player/player.service.interface.dart';
 import 'package:wp_player/services/player/prepare_streams/prepare_streams.dart';
-import 'package:wp_player/services/player/types/enums/session_render_type.player.dart';
+import 'package:wp_player/types/session/session_render_type.player.dart';
 import 'package:wp_player/services/player/types/link_session_info.player.dart';
 import 'package:wp_player/services/player/types/session.player.dart';
 import 'package:wp_player/services/player/types/sub_types/session_broadcast_state.player.dart';
 import 'package:wp_player/services/player/types/sub_types/voiceover_stage.player.dart';
 import 'package:wp_player/types/session/session_info/session_info.dart';
+import 'package:wp_player/types/session/user_role/user_role.dart';
 import 'package:wp_player/utils/logger/logger.dart';
 
 const _fakeArtist = "Dr. Henry";
@@ -35,17 +36,17 @@ class PlayerService implements IPlayerService {
     NativeLibraryPlayer().cleanUp();
     volume = oldVolume;
 
-    await _orchestrator?.dispose();
-    _orchestrator = null;
-    _session = null;
-    _linkSessionInfo = null;
-
     _currentPlayTimeNotifier?.dispose();
     _currentPlayTimeNotifier = null;
     _playbackDurationNotifier?.dispose();
     _playbackDurationNotifier = null;
     _isConnectionInterruptedNotifier?.dispose();
     _isConnectionInterruptedNotifier = null;
+
+    await _orchestrator?.dispose();
+    _orchestrator = null;
+    _session = null;
+    _linkSessionInfo = null;
 
     _latestVoiceovers = null;
     _latestBroadcastState = null;
@@ -139,13 +140,13 @@ class PlayerService implements IPlayerService {
     return SessionInfo(
       id: _session!.id,
       title: _session!.score.name,
-      sessionType: _session!.renderType.getReadableName,
+      sessionType: _session!.renderType,
       artist: _fakeArtist,
       deviceInfo: "Desktop → iPhone 16",
-      description: "The app is just for streaming the music, and the controls are in the browser",
       imageUrl: "",
       atmosphereColors: _session!.score.atmosphereColors,
       emotionalIntensity: _session!.score.emotionalIntensity,
+      userRole: _userRole,
     );
   }
 
@@ -282,4 +283,12 @@ class PlayerService implements IPlayerService {
       throw StateError("Player state invalid: player state notifiers must not be null");
     }
   }
+
+  // -----------------------------------------------------------
+  // TODO: to remove after obtained from link/QR
+
+  UserRole _userRole = UserRole.listener;
+
+  @override
+  set streamingType(UserRole userRole) => _userRole = userRole;
 }
