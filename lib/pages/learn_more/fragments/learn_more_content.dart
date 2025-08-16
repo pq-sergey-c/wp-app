@@ -80,10 +80,10 @@ class LearnMoreContent extends HookConsumerWidget {
               children: [
                 TextSpan(
                   text: "(No card details needed)",
-                  style: TextStyle(fontSize: layout.getTextSize(TextSizes.xs)),
+                  style: TextStyle(fontSize: layout.getTextSize(TextSizes.xs2)),
                 ),
               ],
-              style: TextStyle(fontSize: layout.getTextSize(TextSizes.sm)),
+              style: TextStyle(fontSize: layout.getTextSize(TextSizes.xs)),
             ),
             externalLink: ExternalLinks.registerAccount.uri,
           ),
@@ -145,17 +145,17 @@ class LearnMoreContent extends HookConsumerWidget {
     );
   }
 
-  static const List<({String title, TextSpan text})> _infoEntries = [
+  static final List<({String title, TextSpan text})> _infoEntries = [
     (
       title: "What is a Provider?",
-      text: TextSpan(
+      text: const TextSpan(
         text:
             "A Providers is anyone using Wavepaths to provide music to Listeners. Only Providers with a subscription can create and adapt sessions",
       ),
     ),
     (
       title: "What is a Listener?",
-      text: TextSpan(
+      text: const TextSpan(
         text:
             "A Listener is anyone receiving music from a Provider. Listeners can play this music for free and without the need for a subscription",
       ),
@@ -164,7 +164,10 @@ class LearnMoreContent extends HookConsumerWidget {
       title: "Only Streaming?",
       text: TextSpan(
         text:
-            "Yes, this app only streams music. Starting and controlling sessions happens through the Provider’s account and within the browser only",
+            "Yes, this app only streams music. Starting and controlling sessions happens through the Provider’s account and ",
+        children: [
+          TextSpan(text: "within the browser", style: TextStyle(fontVariations: [FontVariationWeight.w700()])),
+        ],
       ),
     ),
   ];

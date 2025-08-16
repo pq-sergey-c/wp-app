@@ -1,67 +1,106 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-typedef SetCanPop = void Function({required bool canPop});
-typedef OnPopAttempt = void Function(SetCanPop);
-
-void useOnPagePop(WidgetRef ref, {OnPopAttempt? onPop, VoidCallback? afterPopped, bool initialCanPop = true}) {
+SkipPopInterception useOnPagePop(WidgetRef ref, {OnPopAttempt? onPopAttempt, VoidCallback? afterPopped}) {
   final context = useContext();
   final route = ModalRoute.of(context);
 
+  final skipPop = _useOnPagePopInterceptAttempts(context, route, onPopAttempt);
+  _useOnPagePopAfterPopped(route, afterPopped);
+
+  return skipPop;
+}
+
+SkipPopInterception _useOnPagePopInterceptAttempts(
+  BuildContext context,
+  ModalRoute<Object?>? route,
+  OnPopAttempt? onPopAttempt,
+) {
+  final popEntry = useRef<_PopEntry?>(null);
+  final isToSkipPopInterception = useRef<bool>(false);
+
   useEffect(() {
-    if (route == null) return null;
-    final popEntry = _PopEntry(onPop: onPop, afterPopped: afterPopped, initialCanPop: initialCanPop);
+    if (route == null || onPopAttempt == null) return null;
+    popEntry.value = _PopEntry(onPopAttempt);
+    popEntry.value!.skipPopInterception(isToSkip: isToSkipPopInterception.value);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!context.mounted || popEntry.value == null) return;
+      route.registerPopEntry(popEntry.value!);
+    });
+
+    return () {
+      if (popEntry.value != null) route.unregisterPopEntry(popEntry.value!);
+      popEntry.value?.dispose();
+      popEntry.value = null;
+    };
+  }, [route, onPopAttempt]);
+
+  // wrapper is used because popEntry is constructed in useEffect
+  void skipPopWrapper({required bool isToSkip}) {
+    isToSkipPopInterception.value = isToSkip;
+    popEntry.value?.skipPopInterception(isToSkip: isToSkip);
+  }
+
+  return skipPopWrapper;
+}
+
+void _useOnPagePopAfterPopped(ModalRoute<Object?>? route, VoidCallback? afterPopped) {
+  useEffect(() {
+    if (route == null || afterPopped == null) return null;
 
     bool disposed = false;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (disposed || !context.mounted) return;
-      route.registerPopEntry(popEntry);
+    final subscription = route.popped.asStream().listen((_) {
+      if (!disposed) afterPopped.call();
     });
 
     return () {
       disposed = true;
-      route.unregisterPopEntry(popEntry);
-      popEntry.dispose();
+      unawaited(subscription.cancel());
     };
-  }, [route, onPop, initialCanPop]);
+  }, [route, afterPopped]);
 }
 
-// TODO: assess corretness, things to consider: what happens on push and go, what happen with QR scanner (is it working)
-// FIXME: resizing on windows / rotate on android breaks stuff (maybe try to reimplement this whole stuff with always false and manual pop stuff or something - where callback is called from remove and not from isPossibleToRemove)
+// ----------------------------------------
+
+/// use as ack() function - call to give permission
+typedef AllowPopOnNextTime = void Function();
+typedef OnPopAttempt = void Function({required AllowPopOnNextTime acknowledgePopForNextTime});
+typedef SkipPopInterception = void Function({required bool isToSkip});
+
 class _PopEntry extends PopEntry {
-  final OnPopAttempt? onPop;
-  final VoidCallback? afterPopped;
-  final ValueNotifier<bool> _canPopNotifier;
-  final ValueNotifier<bool> _canPopNotifierFalse = ValueNotifier(false);
+  final OnPopAttempt _onPopAttempt;
+  final ValueNotifier<bool> _canPopNotifier = ValueNotifier(false);
+  bool _isToSkipPopInterception = false;
+  bool _canPop = false;
 
-  int initialNotifierReadsCompleted = 0;
-  static const amountOfInitialReads = 2;
-
-  _PopEntry({required this.onPop, required this.afterPopped, required bool initialCanPop})
-    : _canPopNotifier = ValueNotifier(initialCanPop);
+  _PopEntry(this._onPopAttempt);
 
   @override
-  ValueListenable<bool> get canPopNotifier {
-    if (initialNotifierReadsCompleted < amountOfInitialReads) {
-      initialNotifierReadsCompleted++;
-      return _canPopNotifierFalse;
-    }
-    onPop?.call(setCanPop);
-    return _canPopNotifier;
-  }
+  ValueListenable<bool> get canPopNotifier => _canPopNotifier;
 
   @override
   void onPopInvokedWithResult(bool didPop, dynamic result) {
-    if (didPop) afterPopped?.call();
+    if (!didPop && !_isToSkipPopInterception) _onPopAttempt.call(acknowledgePopForNextTime: _allowPop);
     super.onPopInvokedWithResult(didPop, result);
   }
 
-  void dispose() {
-    _canPopNotifier.dispose();
-    _canPopNotifierFalse.dispose();
+  void dispose() => _canPopNotifier.dispose();
+  void skipPopInterception({required bool isToSkip}) {
+    _isToSkipPopInterception = isToSkip;
+    if (isToSkip) {
+      _canPopNotifier.value = true;
+    } else {
+      _canPopNotifier.value = _canPop;
+    }
   }
 
-  void setCanPop({required bool canPop}) => _canPopNotifier.value = canPop;
+  void _allowPop() {
+    _canPopNotifier.value = true;
+    _canPop = true;
+  }
 }

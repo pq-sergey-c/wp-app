@@ -16,7 +16,7 @@ class AppColors {
 
   static const Color greenSoft = Color(0xFFA5E79D);
 
-  static const Color greyPebble = Color(0xFFE0E0E0);
+  static const Color greyFog = Color(0xFFE5E5E5);
   static const Color greyMuted = Color(0xFFcfd2dc);
   static const Color greySmoke = Color(0xFF80838A);
   static const Color greyAsh = Color(0xFF757575);
@@ -28,5 +28,6 @@ class AppColors {
   static const Color indigoDusk = Color(0xFF4C5A7E);
 
   static const Color blueLight = Color(0xFFB3E5FC);
+  static const Color blueIronLight = Color(0xFF323346);
   static const Color blueIron = Color(0xFF2B2D3F);
 }

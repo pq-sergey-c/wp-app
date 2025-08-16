@@ -26,7 +26,7 @@ class AdditionalInfo extends ConsumerWidget {
     }
 
     return Column(
-      spacing: 24,
+      spacing: 18,
       children: [
         ExternalLinkBox(
           text: const TextSpan(text: "Start a new session"),

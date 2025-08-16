@@ -8,12 +8,12 @@ import 'package:wp_player/services/player/link_parser/parse_link.dart';
 import 'package:wp_player/services/player/network/fetch_session.dart';
 import 'package:wp_player/services/player/player.service.interface.dart';
 import 'package:wp_player/services/player/prepare_streams/prepare_streams.dart';
-import 'package:wp_player/types/session/session_render_type.player.dart';
 import 'package:wp_player/services/player/types/link_session_info.player.dart';
 import 'package:wp_player/services/player/types/session.player.dart';
 import 'package:wp_player/services/player/types/sub_types/session_broadcast_state.player.dart';
 import 'package:wp_player/services/player/types/sub_types/voiceover_stage.player.dart';
 import 'package:wp_player/types/session/session_info/session_info.dart';
+import 'package:wp_player/types/session/session_render_type/session_render_type.dart';
 import 'package:wp_player/types/session/user_role/user_role.dart';
 import 'package:wp_player/utils/logger/logger.dart';
 
@@ -131,11 +131,7 @@ class PlayerService implements IPlayerService {
 
   @override
   SessionInfo get sessionInformation {
-    if (_session == null) {
-      throw StateError(
-        "Player state invalid: session should have been fetched before trying to obtain session information",
-      );
-    }
+    _assertSessionAndSessionInfoExist();
 
     return SessionInfo(
       id: _session!.id,
@@ -147,6 +143,7 @@ class PlayerService implements IPlayerService {
       atmosphereColors: _session!.score.atmosphereColors,
       emotionalIntensity: _session!.score.emotionalIntensity,
       userRole: _userRole,
+      providerControlUri: _session!.getProviderControlUri(_userRole, _linkSessionInfo!.externalOrchestratorEnv),
     );
   }
 

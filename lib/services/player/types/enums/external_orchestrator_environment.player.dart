@@ -42,7 +42,15 @@ enum ExternalOrchestratorEnvironment {
     if (result == null) throw StateError('No URI is found for the current ExternalOrchestratorEnvironment: $value');
     return result;
   }
+
+  Uri get webAppBaseUri {
+    final Uri? result = _webAppBaseUriByEnvironmentMap[this];
+    if (result == null) throw StateError('No URI is found for the current ExternalOrchestratorEnvironment: $value');
+    return result;
+  }
 }
+
+// ----------------------------------------------------------------
 
 final Map<ExternalOrchestratorEnvironment, Uri> _externalOrchestratorUriByEnvironmentMap = {
   ExternalOrchestratorEnvironment.developmentLocal: Uri.http("localhost:8080"),
@@ -78,4 +86,12 @@ final Map<ExternalOrchestratorEnvironment, Uri> _freeVoiceoverUriByEnvironmentMa
     'freud-streams.wavepaths.com',
     '/fallback/FreeAccountVOTrimmed.mp3',
   ),
+};
+
+final Map<ExternalOrchestratorEnvironment, Uri> _webAppBaseUriByEnvironmentMap = {
+  // TODO: get the real baseUri for local dev (current one is but a copy-past from orchestratorUri)
+  ExternalOrchestratorEnvironment.developmentLocal: Uri.http("localhost:8080"),
+
+  ExternalOrchestratorEnvironment.development: Uri.https("guide-dev.wavepaths.com"),
+  ExternalOrchestratorEnvironment.production: Uri.https("guide.wavepaths.com"),
 };

@@ -3,16 +3,16 @@ import 'package:wp_player/layout/popup/fragments/implementations/popup_loading.d
 import 'package:wp_player/layout/popup/fragments/implementations/popup_network_issues.dart';
 import 'package:wp_player/layout/popup/fragments/implementations/popup_notification.dart';
 import 'package:wp_player/layout/popup/fragments/implementations/popup_yes_no.dart';
+import 'package:wp_player/providers/popup/types/popup_content.dart';
 
 @immutable
 sealed class PopupBaseConfig {
-  final String title;
-  final TextSpan message;
+  final PopupContent content;
 
   /// Called when removed from stack due to navigation
   final void Function()? onForcedClosedCallback;
 
-  const PopupBaseConfig({required this.title, required this.message, this.onForcedClosedCallback});
+  const PopupBaseConfig({required this.content, this.onForcedClosedCallback});
 
   Widget build({bool withBackgroundOverlay = false});
 }
@@ -23,8 +23,7 @@ class PopupNotificationConfig extends PopupBaseConfig {
   final void Function() buttonCallback;
 
   const PopupNotificationConfig({
-    required super.title,
-    required super.message,
+    required super.content,
     required this.buttonText,
     required this.buttonCallback,
     super.onForcedClosedCallback,
@@ -43,8 +42,7 @@ class PopupYesNoConfig extends PopupBaseConfig {
   final void Function() noCallback;
 
   const PopupYesNoConfig({
-    required super.title,
-    required super.message,
+    required super.content,
     required this.yesText,
     required this.noText,
     required this.yesCallback,
@@ -58,7 +56,7 @@ class PopupYesNoConfig extends PopupBaseConfig {
 
 @immutable
 class PopupLoadingConfig extends PopupBaseConfig {
-  const PopupLoadingConfig({required super.title, required super.message, super.onForcedClosedCallback});
+  const PopupLoadingConfig({required super.content, super.onForcedClosedCallback});
 
   @override
   Widget build({bool withBackgroundOverlay = false}) =>
@@ -67,7 +65,7 @@ class PopupLoadingConfig extends PopupBaseConfig {
 
 @immutable
 class PopupNetworkIssuesConfig extends PopupBaseConfig {
-  const PopupNetworkIssuesConfig({required super.title, required super.message, super.onForcedClosedCallback});
+  const PopupNetworkIssuesConfig({required super.content, super.onForcedClosedCallback});
 
   @override
   Widget build({bool withBackgroundOverlay = false}) =>

@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:wp_player/providers/popup/types/popup_content.dart';
 import 'package:wp_player/utils/logger/logger.dart';
 
 typedef RequestNotificationPermissionYesNoPopupCallback =
-    Future<bool> Function({
-      required String title,
-      required String yesText,
-      required String noText,
-      required TextSpan message,
-    });
+    Future<bool> Function({required PopupContent content, required String yesText, required String noText});
 
 class RequestNotificationPermissions {
   /// Should be called at the beginning of the app, to allow not UI elements to make notification permission request
@@ -57,8 +53,7 @@ class RequestNotificationPermissions {
     final bool isUserOkWithOpeningSettings = await _addPopupYesNo!(
       yesText: _now,
       noText: _maybeLatter,
-      title: _openSettingsTitle,
-      message: const TextSpan(text: _messageToOpenSettings),
+      content: PopupContent.text(title: _openSettingsTitle, message: const TextSpan(text: _messageToOpenSettings)),
     );
     if (!isUserOkWithOpeningSettings) return;
 
@@ -74,8 +69,10 @@ class RequestNotificationPermissions {
     final bool isUserOkWithPermissions = await _addPopupYesNo!(
       yesText: _now,
       noText: _maybeLatter,
-      title: _notificationRequiredTitle,
-      message: const TextSpan(text: _messageWhenPermissionsAreStillGrantable),
+      content: PopupContent.text(
+        title: _notificationRequiredTitle,
+        message: const TextSpan(text: _messageWhenPermissionsAreStillGrantable),
+      ),
     );
 
     if (!isUserOkWithPermissions) return false;

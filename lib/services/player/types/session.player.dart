@@ -1,7 +1,9 @@
-import 'package:wp_player/types/session/session_render_type.player.dart';
+import 'package:wp_player/services/player/types/enums/external_orchestrator_environment.player.dart';
 import 'package:wp_player/services/player/types/sub_types/session_broadcast_state.player.dart';
 import 'package:wp_player/services/player/types/sub_types/session_score.player.dart';
 import 'package:wp_player/services/player/types/sub_types/session_variable_inputs.player.dart';
+import 'package:wp_player/types/session/session_render_type/session_render_type.dart';
+import 'package:wp_player/types/session/user_role/user_role.dart';
 
 class Session {
   final String id;
@@ -23,6 +25,13 @@ class Session {
     required this.duration,
     required this.endTime,
   });
+
+  /// Returns Uri only when both [userRole] and [renderType] allows to have such url
+  Uri? getProviderControlUri(UserRole userRole, ExternalOrchestratorEnvironment environment) {
+    if (userRole != UserRole.provider || renderType != SessionRenderType.predictiveComposed) return null;
+    final webAppUri = environment.webAppBaseUri;
+    return webAppUri.replace(pathSegments: [...webAppUri.pathSegments, 'session', id]);
+  }
 
   static Session? fromJson(Map<String, dynamic> json, {required Duration duration, DateTime? endTime}) {
     final dynamic id = json["id"];

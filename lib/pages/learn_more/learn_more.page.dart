@@ -17,20 +17,21 @@ class LearnMorePage extends ConsumerWidget {
       mobile: 24,
       orElse: layout.getClampedHeight(percent: 5, min: 15),
     ); // based on top position of home button
-    const double bottomPadding = 24;
+    const double bottomPadding = 20;
+
     final double horizontalPadding = layout.getClampedWidth(percent: 7, max: 50);
 
     return ScrollablePageShell(
       child: Padding(
         padding: EdgeInsets.only(
           top: topPadding,
-          bottom: bottomPadding,
           left: horizontalPadding,
           right: horizontalPadding,
+          bottom: bottomPadding,
         ),
         child: SizedBox(
           width: layout.screenWidth,
-          height: max(layout.screenHeight - topPadding - bottomPadding - layout.paddingTop, 700),
+          height: max(layout.screenHeight - topPadding - layout.paddingTop - bottomPadding, 700),
           child: const LearnMoreContent(),
         ),
       ),

@@ -9,12 +9,22 @@ import 'package:wp_player/styles/colors/colors.dart';
 import 'package:wp_player/utils/logger/logger.dart';
 
 class ExternalLinkBox extends ConsumerWidget {
-  const ExternalLinkBox({required this.text, required this.externalLink, this.width, this.height, super.key});
+  const ExternalLinkBox({
+    required this.text,
+    required this.externalLink,
+    this.width,
+    this.height,
+    this.maxAmountOfLines,
+    this.onOverflow,
+    super.key,
+  });
 
   final TextSpan text;
   final Uri externalLink;
   final double? width;
   final double? height;
+  final int? maxAmountOfLines;
+  final TextOverflow? onOverflow;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -54,6 +64,8 @@ class ExternalLinkBox extends ConsumerWidget {
                     light: themeMode.themeConfig.subtext,
                   ),
                 ),
+                maxLines: maxAmountOfLines,
+                overflow: onOverflow,
               ),
             ),
             SvgPicture.asset(

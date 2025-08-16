@@ -24,75 +24,48 @@ class SelectRoleContent extends HookConsumerWidget {
     final getVersionFuture = useMemoized(() => PackageInfo.fromPlatform().then((result) => result));
     final version = useFuture(getVersionFuture);
 
+    final buttonHight = layout.isDesktop ? layout.getClampedHeight(percent: 12, max: 90, min: 70) : null;
+    final buttonTextStyle = TextStyle(
+      fontSize: layout.selectByScreenType(
+        desktop: layout.getTextSize(TextSizes.xl),
+        orElse: layout.getTextSize(TextSizes.normal),
+      ),
+      fontFamily: themeMode.themeConfig.fontFamily,
+      color: themeMode.themeConfig.onPrimary,
+      fontVariations: [FontVariationWeight.w600()],
+    );
+
     final mainButtons = [
       Button(
         onClicked: () => context.push('/connect/${UserRole.provider.value}'),
         text: "I am a Provider",
-        height: layout.isDesktop ? layout.getClampedHeight(percent: 12, max: 90, min: 70) : null,
-        textStyle: TextStyle(
-          fontSize: layout.selectByScreenType(
-            desktop: layout.getTextSize(TextSizes.xl),
-            orElse: layout.getTextSize(TextSizes.normal),
-          ),
-          fontFamily: themeMode.themeConfig.fontFamily,
-          color: themeMode.themeConfig.onPrimary,
-          fontVariations: [FontVariationWeight.w600()],
-        ),
+        height: buttonHight,
+        textStyle: buttonTextStyle,
       ),
       Button(
         onClicked: () => context.push('/connect/${UserRole.listener.value}'),
         text: "I am a Listener",
-        height: layout.isDesktop ? layout.getClampedHeight(percent: 12, max: 90, min: 70) : null,
-        textStyle: TextStyle(
-          fontSize: layout.selectByScreenType(
-            desktop: layout.getTextSize(TextSizes.xl),
-            orElse: layout.getTextSize(TextSizes.normal),
-          ),
-          fontFamily: themeMode.themeConfig.fontFamily,
-          color: themeMode.themeConfig.onPrimary,
-          fontVariations: [FontVariationWeight.w600()],
-        ),
+        height: buttonHight,
+        textStyle: buttonTextStyle,
       ),
     ];
 
     final secondaryButtons = [
       Button(
-        // TODO: add button subtype maybe for buttonStyle values
         onClicked: () => context.push('/learn_more'),
         text: "Learn More",
-        height: layout.isDesktop ? layout.getClampedHeight(percent: 12, max: 90, min: 70) : null,
-        textStyle: TextStyle(
-          fontSize: layout.selectByScreenType(
-            desktop: layout.getTextSize(TextSizes.xl),
-            orElse: layout.getTextSize(TextSizes.normal),
-          ),
-          fontFamily: themeMode.themeConfig.fontFamily,
+        height: buttonHight,
+        textStyle: buttonTextStyle.copyWith(
           color: themeMode.getColorByMode(dark: themeMode.themeConfig.onPrimary, light: themeMode.themeConfig.primary),
-          fontVariations: [FontVariationWeight.w600()],
         ),
-        buttonStyle: ButtonStyle(
-          backgroundColor: WidgetStateProperty.all<Color>(themeMode.themeConfig.background),
-          side: WidgetStateProperty.all<BorderSide>(
-            BorderSide(
-              color: themeMode.getColorByMode(
-                dark: themeMode.themeConfig.onPrimary,
-                light: themeMode.themeConfig.primary,
-              ),
-            ),
-          ),
-          overlayColor: WidgetStateProperty.all<Color>(
-            themeMode.getColorByMode(
-              dark: const Color.fromARGB(67, 67, 69, 91), // TODO: Move to app colors
-              light: const Color.fromARGB(118, 217, 217, 222),
-            ),
-          ),
-        ),
+        buttonVariation: ButtonVariation.outlined,
       ),
     ];
 
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        spacing: 36,
         children: [
           Container(
             padding: EdgeInsetsGeometry.only(top: layout.getClampedHeight(percent: 1.5, min: 10)),
@@ -106,7 +79,7 @@ class SelectRoleContent extends HookConsumerWidget {
           ),
 
           Text(
-            "This app lets you stream Wavepaths music with optimal audio quality and playback stability",
+            "This app streams Wavepaths music with optimal quality and stability",
             textAlign: TextAlign.center,
             style: TextStyle(
               fontVariations: [FontVariationWeight.w400()],
@@ -121,21 +94,27 @@ class SelectRoleContent extends HookConsumerWidget {
           ),
 
           layout.selectByScreenType(
-            mobile: Column(
-              spacing: 32,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: mainButtons + secondaryButtons,
+            mobile: Expanded(
+              child: Column(
+                spacing: 32,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: mainButtons + secondaryButtons,
+              ),
             ),
-            orElse: Column(
-              spacing: 32,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  spacing: layout.getClampedWidth(percent: 3),
-                  children: mainButtons.map((button) => Expanded(child: button)).toList(),
-                ),
-                Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: secondaryButtons),
-              ],
+            orElse: Expanded(
+              child: Column(
+                spacing: 32,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    spacing: layout.getClampedWidth(percent: 3),
+                    children: mainButtons.map((button) => Expanded(child: button)).toList(),
+                  ),
+                  Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: secondaryButtons),
+                ],
+              ),
             ),
           ),
 

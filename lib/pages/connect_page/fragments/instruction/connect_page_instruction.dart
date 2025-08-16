@@ -18,11 +18,13 @@ class ConnectPageInstruction extends ConsumerWidget {
     final layout = ref.watch(responsiveLayoutProvider);
 
     return userRole == UserRole.listener
-        ? layout.widthBreakpoints([
-          (item: const ConnectPageInstructionNarrowListener(), maxWidth: 900),
-        ], fallback: const ConnectPageInstructionWideListener())
-        : layout.widthBreakpoints([
-          (item: const ConnectPageInstructionNarrowProvider(), maxWidth: 900),
-        ], fallback: const ConnectPageInstructionWideProvider());
+        ? layout.selectByScreenType(
+          desktop: const ConnectPageInstructionWideListener(),
+          orElse: const ConnectPageInstructionNarrowListener(),
+        )
+        : layout.selectByScreenType(
+          desktop: const ConnectPageInstructionWideProvider(),
+          orElse: const ConnectPageInstructionNarrowProvider(),
+        );
   }
 }

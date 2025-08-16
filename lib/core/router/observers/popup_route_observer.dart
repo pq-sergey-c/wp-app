@@ -1,3 +1,5 @@
+// TODO: consider replacing observer with onPop hook (it also might help with easier setup for popups that block pop)
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wp_player/providers/popup/popup.provider.dart';

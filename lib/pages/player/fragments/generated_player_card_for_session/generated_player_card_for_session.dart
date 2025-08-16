@@ -3,7 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:wp_player/components/music_player/generated_player_card_for_session/fragments/generated_card_painter.dart';
+import 'package:wp_player/pages/player/fragments/generated_player_card_for_session/fragments/generated_card_painter.dart';
 import 'package:wp_player/types/session/session_info/session_info.dart';
 import 'package:wp_player/utils/logger/logger.dart';
 

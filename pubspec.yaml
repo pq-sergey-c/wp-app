@@ -1,11 +1,11 @@
 name: wp_player
-description: "Wavepaths Player"
+description: "Wavepaths"
 # Prevents app from being published to pub.dev by using `flutter pub publish`
 publish_to: "none" # Don't remove this line
 
 # Update both versionName (seen by user) and versionCode on new version
 # version: major.minor.patch+yyyymmddaa - where aa is two numbered version on this date
-version: 0.2.2+2025080701
+version: 0.2.3+2025081501
 
 environment:
   sdk: ^3.7.0
@@ -56,7 +56,6 @@ flutter:
     - assets/audio/
     - assets/images/
     - assets/images/noise/
-    - assets/images/illustrations/
     - assets/icons/
   fonts:
     - family: Inter

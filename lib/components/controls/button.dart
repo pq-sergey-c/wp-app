@@ -3,7 +3,11 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:wp_player/providers/responsive_layout/responsive_layout.provider.dart';
 import 'package:wp_player/providers/responsive_layout/types/enums/responsive_layout_text_sizes.dart';
 import 'package:wp_player/providers/theme_mode/theme_mode.provider.dart';
+import 'package:wp_player/providers/theme_mode/types/theme_mode.state.dart';
+import 'package:wp_player/styles/colors/colors.dart';
 import 'package:wp_player/types/font_variation/font_variation_weight.dart';
+
+enum ButtonVariation { filled, outlined }
 
 class Button extends ConsumerWidget {
   const Button({
@@ -13,6 +17,7 @@ class Button extends ConsumerWidget {
     this.width,
     this.textStyle,
     this.buttonStyle,
+    this.buttonVariation = ButtonVariation.filled,
     super.key,
   });
 
@@ -22,6 +27,7 @@ class Button extends ConsumerWidget {
   final double? height;
   final TextStyle? textStyle;
   final ButtonStyle? buttonStyle;
+  final ButtonVariation buttonVariation;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -30,10 +36,9 @@ class Button extends ConsumerWidget {
 
     return SizedBox(
       width: width ?? layout.getClampedWidth(percent: 90, max: 300),
-      height: height ?? layout.getClampedHeight(percent: 10, max: 70),
+      height: height ?? layout.getClampedHeight(percent: 10, max: 70, min: 60),
       child: ElevatedButton(
-        style:
-            buttonStyle ?? ButtonStyle(backgroundColor: WidgetStateProperty.all<Color>(themeMode.themeConfig.primary)),
+        style: buttonStyle ?? _getButtonStyleByVariation(themeMode),
         onPressed: onClicked,
         child: Text(
           text,
@@ -49,5 +54,27 @@ class Button extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  dynamic _getButtonStyleByVariation(ThemeModeState themeMode) {
+    return switch (buttonVariation) {
+      ButtonVariation.filled => ButtonStyle(
+        backgroundColor: WidgetStateProperty.all<Color>(themeMode.themeConfig.primary),
+      ),
+      ButtonVariation.outlined => ButtonStyle(
+        backgroundColor: WidgetStateProperty.all<Color>(themeMode.themeConfig.background),
+        side: WidgetStateProperty.all<BorderSide>(
+          BorderSide(
+            color: themeMode.getColorByMode(
+              dark: themeMode.themeConfig.onPrimary,
+              light: themeMode.themeConfig.primary,
+            ),
+          ),
+        ),
+        overlayColor: WidgetStateProperty.all<Color>(
+          themeMode.getColorByMode(dark: AppColors.blueIronLight, light: AppColors.greyFog),
+        ),
+      ),
+    };
   }
 }

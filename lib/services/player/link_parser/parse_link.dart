@@ -2,11 +2,6 @@ import 'package:wp_player/services/player/types/enums/external_orchestrator_envi
 import 'package:wp_player/services/player/types/link_session_info.player.dart';
 import 'package:wp_player/utils/data_parse/http_link_parsing/check_translate_http_link_to_player_link.dart';
 
-String _constructUrl(ExternalOrchestratorEnvironment freudEnv, String broadcastId) {
-  final baseUrl = (freudEnv.isDevelopment) ? 'freud-streams-dev.wavepaths.com' : 'freud-streams.wavepaths.com';
-  return 'https://$baseUrl/streamdata/$broadcastId/stream.m3u8';
-}
-
 ExternalOrchestratorEnvironment _externalOrchestratorEnvFromPathParts(List<String> pathParts) {
   const validEnvs = {'dev', 'dev-local', 'prod'};
   final envString = pathParts.firstWhere((part) => validEnvs.contains(part), orElse: () => 'prod');
@@ -44,7 +39,6 @@ LinkSessionInfo? sessionServiceParseLink(String link) {
   final orchestratorEnv = _externalOrchestratorEnvFromPathParts(pathParts);
 
   return LinkSessionInfo(
-    url: _constructUrl(orchestratorEnv, broadcastId),
     broadcastId: broadcastId,
     externalOrchestratorEnv: orchestratorEnv,
     withFreeVoiceover: withFreeVoiceOver,

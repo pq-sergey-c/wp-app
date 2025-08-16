@@ -12,6 +12,7 @@ import 'package:wp_player/core/deep_linking/deep_linking_provider.dart';
 import 'package:wp_player/pages/select_role/fragments/select_role_content.dart';
 import 'package:wp_player/pages/select_role/types/connect_page_show_popup.dart';
 import 'package:wp_player/providers/popup/popup.provider.dart';
+import 'package:wp_player/providers/popup/types/popup_content.dart';
 import 'package:wp_player/providers/responsive_layout/responsive_layout.provider.dart';
 import 'package:wp_player/services/player/player.service.dart';
 import 'package:wp_player/utils/logger/logger.dart';
@@ -30,27 +31,27 @@ class SelectRolePage extends ConsumerWidget {
       mobile: 24,
       orElse: layout.getClampedHeight(percent: 5, min: 15),
     ); // based on top position of home button
-    const double bottomPadding = 8;
+    const double bottomPadding = 20;
     final double horizontalPadding = layout.getClampedWidth(percent: 7, max: 50);
 
     // Deeplinking
     SelectRolePageCloseLoadingPopupCallback showLoadingPopup() {
-      return popup.addPopupLoading(title: "Please wait", message: const TextSpan(text: "Connecting to the server..."));
+      return popup.addPopupLoading(
+        content: PopupContent.text(title: "Please wait", message: const TextSpan(text: "Connecting to the server...")),
+      );
     }
 
     Future<void> showFailPopup({required String correctnessOf}) {
       return popup.addPopupNotification(
-        title: "Failed to connect to server",
-        buttonText: "I understand",
-        message: const TextSpan(
-          children: [
-            TextSpan(
-              text:
-                  'In rare cases it is possible that the server is temporarily unavailable. '
-                  'If this does not resolve within 5-10 minutes, please contact us via support@wavepaths.com',
-            ),
-          ],
+        content: PopupContent.text(
+          title: "Failed to connect to server",
+          message: const TextSpan(
+            text:
+                'In rare cases it is possible that the server is temporarily unavailable. '
+                'If this does not resolve within 5-10 minutes, please contact us via support@wavepaths.com',
+          ),
         ),
+        buttonText: "I understand",
       );
     }
 

@@ -20,7 +20,7 @@ class ConnectPageInstructionWideListener extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               SizedBox(
-                width: layout.getClampedWidth(percent: 25),
+                width: layout.getClampedWidth(percent: 23),
                 child: const ConnectPageIconEntry(
                   iconPath: 'assets/images/scan_qr.svg',
                   description: TextSpan(text: "Scan QR code"),
@@ -28,7 +28,7 @@ class ConnectPageInstructionWideListener extends ConsumerWidget {
                 ),
               ),
               SizedBox(
-                width: layout.getClampedWidth(percent: 25),
+                width: layout.getClampedWidth(percent: 23),
                 child: const ConnectPageIconEntry(
                   iconPath: 'assets/images/click_link.svg',
                   description: TextSpan(text: "Or open session link"),
@@ -36,7 +36,7 @@ class ConnectPageInstructionWideListener extends ConsumerWidget {
                 ),
               ),
               SizedBox(
-                width: layout.getClampedWidth(percent: 25),
+                width: layout.getClampedWidth(percent: 23),
                 child: const ConnectPageIconEntry(
                   iconPath: 'assets/images/listen_music.svg',
                   description: TextSpan(text: "Relax and listen to the music"),

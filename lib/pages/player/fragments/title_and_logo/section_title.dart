@@ -21,8 +21,10 @@ class SectionTitle extends ConsumerWidget {
         fontSize: layout.getTextSize(TextSizes.xl2),
         fontVariations: [FontVariationWeight.w700()],
         color: themeMode.themeConfig.title,
+        overflow: TextOverflow.ellipsis,
       ),
       textAlign: TextAlign.center,
+      maxLines: 3,
     );
   }
 }

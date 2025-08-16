@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:collection';
 
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wp_player/providers/popup/types/popup_config.dart';
+import 'package:wp_player/providers/popup/types/popup_content.dart';
 
 class PopupNotifier extends Notifier<LinkedHashMap<int, PopupBaseConfig>> {
   static int _iterator = 0;
@@ -20,18 +20,16 @@ class PopupNotifier extends Notifier<LinkedHashMap<int, PopupBaseConfig>> {
   ///
   /// async return [bool] - is junk value to denote to not ignore awaiting
   Future<void> addPopupNotification({
-    required String title,
+    required PopupContent content,
     required String buttonText,
-    required TextSpan message,
     void Function()? onForcedClosedCallback,
   }) async {
     final id = _nextId;
     final completer = Completer<void>();
 
     final config = PopupNotificationConfig(
-      title: title,
+      content: content,
       buttonText: buttonText,
-      message: message,
       buttonCallback: () {
         removePopup(id);
         completer.complete();
@@ -52,20 +50,18 @@ class PopupNotifier extends Notifier<LinkedHashMap<int, PopupBaseConfig>> {
   ///
   /// async return [bool] - true: when yes was pressed, false: when no was pressed
   Future<bool> addPopupYesNo({
-    required String title,
+    required PopupContent content,
     required String yesText,
     required String noText,
-    required TextSpan message,
     void Function()? onForcedClosedCallback,
   }) async {
     final id = _nextId;
     final completer = Completer<bool>();
 
     final config = PopupYesNoConfig(
-      title: title,
+      content: content,
       yesText: yesText,
       noText: noText,
-      message: message,
       yesCallback: () {
         removePopup(id);
         completer.complete(true);
@@ -87,13 +83,9 @@ class PopupNotifier extends Notifier<LinkedHashMap<int, PopupBaseConfig>> {
   // ---------------------------------------------------------------------------
 
   /// return [void Function()] - callback to be called to close popup
-  void Function() addPopupLoading({
-    required String title,
-    required TextSpan message,
-    void Function()? onForcedClosedCallback,
-  }) {
+  void Function() addPopupLoading({required PopupContent content, void Function()? onForcedClosedCallback}) {
     final id = _nextId;
-    final config = PopupLoadingConfig(title: title, message: message, onForcedClosedCallback: onForcedClosedCallback);
+    final config = PopupLoadingConfig(content: content, onForcedClosedCallback: onForcedClosedCallback);
 
     final newState = LinkedHashMap<int, PopupBaseConfig>.from(state);
     newState[id] = config;
@@ -105,17 +97,9 @@ class PopupNotifier extends Notifier<LinkedHashMap<int, PopupBaseConfig>> {
   // ---------------------------------------------------------------------------
 
   /// return [void Function()] - callback to be called to close popup
-  void Function() addPopupNetworkIssues({
-    required String title,
-    required TextSpan message,
-    void Function()? onForcedClosedCallback,
-  }) {
+  void Function() addPopupNetworkIssues({required PopupContent content, void Function()? onForcedClosedCallback}) {
     final id = _nextId;
-    final config = PopupNetworkIssuesConfig(
-      title: title,
-      message: message,
-      onForcedClosedCallback: onForcedClosedCallback,
-    );
+    final config = PopupNetworkIssuesConfig(content: content, onForcedClosedCallback: onForcedClosedCallback);
 
     final newState = LinkedHashMap<int, PopupBaseConfig>.from(state);
     newState[id] = config;

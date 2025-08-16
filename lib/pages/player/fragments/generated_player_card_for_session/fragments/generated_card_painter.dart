@@ -2,7 +2,7 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:wp_player/components/music_player/generated_player_card_for_session/types/circle_type.dart';
+import 'package:wp_player/pages/player/fragments/generated_player_card_for_session/types/circle_type.dart';
 import 'package:wp_player/types/session/session_info/fragments/atmosphere_color.dart';
 import 'package:wp_player/types/session/session_info/fragments/emotional_intensity.dart';
 import 'package:wp_player/utils/math/seeded_random.dart';

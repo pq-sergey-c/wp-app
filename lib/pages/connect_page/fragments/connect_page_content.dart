@@ -33,6 +33,9 @@ class ConnectPageContent extends ConsumerWidget {
       (item: MainAxisAlignment.spaceAround, maxHeight: 450),
     ], fallback: MainAxisAlignment.spaceBetween);
 
+    final width = layout.selectByScreenType(orElse: layout.getClampedWidth(percent: 80, max: 450));
+    final widthOfInstructions = layout.selectByScreenType(desktop: layout.screenWidth, orElse: width);
+
     return Column(
       mainAxisAlignment: alignment,
       spacing: 20,
@@ -48,23 +51,27 @@ class ConnectPageContent extends ConsumerWidget {
           ),
         ),
 
-        ...layout.heightBreakpoints(
-          [(maxHeight: 750, item: [])],
-          fallback: [
-            Text(
-              userRole == UserRole.listener ? "Start streaming as a Listener" : "Start streaming as a Provider",
+        if (layout.screenHeight >= 750) ...[
+          SizedBox(
+            width: width,
+            child: Text(
+              userRole == UserRole.listener ? "Start streaming\nas a Listener" : "Start streaming\nas a Provider",
               style: TextStyle(
                 fontSize: layout.getTextSize(layout.selectByScreenType(desktop: TextSizes.xl2, orElse: TextSizes.xl)),
                 fontVariations: [FontVariationWeight.w700()],
+                height: 1.2,
               ),
               textAlign: TextAlign.center,
             ),
-          ],
-        ),
+          ),
+        ],
 
-        ConnectPageInstruction(userRole: userRole),
-        AdditionalInfo(userRole: userRole),
-        ConnectPageAction(showLoadingPopup: showLoadingPopup, showFailPopup: showFailPopup),
+        SizedBox(width: widthOfInstructions, child: ConnectPageInstruction(userRole: userRole)),
+        SizedBox(width: width, child: AdditionalInfo(userRole: userRole)),
+        SizedBox(
+          width: width,
+          child: ConnectPageAction(showLoadingPopup: showLoadingPopup, showFailPopup: showFailPopup),
+        ),
       ],
     );
   }
