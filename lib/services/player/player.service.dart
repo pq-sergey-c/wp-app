@@ -135,7 +135,7 @@ class PlayerService implements IPlayerService {
 
     return SessionInfo(
       id: _session!.id,
-      title: _session!.score.name,
+      title: _session!.sessionName,
       sessionType: _session!.renderType,
       artist: _fakeArtist,
       deviceInfo: "Desktop → iPhone 16",
@@ -204,6 +204,7 @@ class PlayerService implements IPlayerService {
         sessionDuration: _session!.duration,
         sessionScore: _session!.score,
         artist: _fakeArtist,
+        sessionName: _session!.sessionName,
       );
     }
 
@@ -217,6 +218,7 @@ class PlayerService implements IPlayerService {
       sessionId: _session!.id,
       sessionScore: _session!.score,
       artist: _fakeArtist,
+      sessionName: _session!.sessionName,
     );
   }
 

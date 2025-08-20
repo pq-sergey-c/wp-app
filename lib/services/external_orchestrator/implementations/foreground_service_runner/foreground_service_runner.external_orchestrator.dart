@@ -214,12 +214,13 @@ class ExternalOrchestratorRunnerForegroundService implements IExternalOrchestrat
     required Duration sessionDuration,
     required SessionScore sessionScore,
     required String artist,
+    required String sessionName,
   }) : _startData = serializeStartupParamsOfflineForegroundService(
          ForegroundServiceStartupParamsOffline(
            sessionId: sessionId,
            broadcastState: broadcastState,
            sessionDuration: sessionDuration,
-           sessionName: sessionScore.name,
+           sessionName: sessionName,
            artist: artist,
            emotionalIntensity: sessionScore.emotionalIntensity,
            atmosphereColors: sessionScore.atmosphereColors,
@@ -240,12 +241,13 @@ class ExternalOrchestratorRunnerForegroundService implements IExternalOrchestrat
     required String sessionId,
     required SessionScore sessionScore,
     required String artist,
+    required String sessionName,
   }) : _startData = serializeStartupParamsOnlineForegroundService(
          ForegroundServiceStartupParamsOnline(
            environment: environment,
            broadcastId: broadcastId,
            sessionId: sessionId,
-           sessionName: sessionScore.name,
+           sessionName: sessionName,
            artist: artist,
            emotionalIntensity: sessionScore.emotionalIntensity,
            atmosphereColors: sessionScore.atmosphereColors,

@@ -14,6 +14,7 @@ class Session {
   final SessionBroadcastState? broadcastState;
   final Duration duration;
   final DateTime? endTime;
+  final String sessionName;
 
   const Session({
     required this.id,
@@ -24,7 +25,30 @@ class Session {
     required this.broadcastState,
     required this.duration,
     required this.endTime,
+    required this.sessionName,
   });
+
+  /// Safely calculates session name with fallback logic matching iOS:
+  /// variableInputs.name -> score.name -> "--"
+  static String _calculateSessionName({
+    required SessionVariableInputs? variableInputs,
+    required SessionScore score,
+  }) {
+    try {
+      final variableInputsName = variableInputs?.name?.trim();
+      final scoreName = score.name.trim();
+      
+      if (variableInputsName != null && variableInputsName.isNotEmpty) {
+        return variableInputsName;
+      } else if (scoreName.isNotEmpty) {
+        return scoreName;
+      } else {
+        return "--";
+      }
+    } catch (e) {
+      return "--";
+    }
+  }
 
   /// Returns Uri only when both [userRole] and [renderType] allows to have such url
   Uri? getProviderControlUri(UserRole userRole, ExternalOrchestratorEnvironment environment) {
@@ -76,6 +100,11 @@ class Session {
       broadcastState = temp;
     }
 
+    final String sessionName = _calculateSessionName(
+      variableInputs: variableInputs,
+      score: score,
+    );
+
     return Session(
       id: id,
       renderType: renderType,
@@ -85,6 +114,7 @@ class Session {
       broadcastState: broadcastState,
       duration: duration,
       endTime: endTime,
+      sessionName: sessionName,
     );
   }
 }

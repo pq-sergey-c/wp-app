@@ -21,6 +21,7 @@ Future<IExternalOrchestrator> makeOnlineExternalOrchestrator({
   required String sessionId,
   required SessionScore sessionScore,
   required String artist,
+  required String sessionName,
 }) async {
   if (Platform.isWindows) {
     return ExternalOrchestratorRunnerMainIsolate.online(
@@ -60,6 +61,7 @@ Future<IExternalOrchestrator> makeOnlineExternalOrchestrator({
     sessionId: sessionId,
     sessionScore: sessionScore,
     artist: artist,
+    sessionName: sessionName,
   );
 }
 
@@ -72,6 +74,7 @@ Future<IExternalOrchestrator> makeOfflineExternalOrchestrator({
   required Duration sessionDuration,
   required SessionScore sessionScore,
   required String artist,
+  required String sessionName,
 }) async {
   if (Platform.isWindows) {
     return ExternalOrchestratorRunnerMainIsolate.offline(
@@ -108,5 +111,6 @@ Future<IExternalOrchestrator> makeOfflineExternalOrchestrator({
     sessionDuration: sessionDuration,
     sessionScore: sessionScore,
     artist: artist,
+    sessionName: sessionName,
   );
 }
