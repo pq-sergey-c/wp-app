@@ -152,7 +152,7 @@ List<WpPlayerStream> _getCustomVoiceoverStreams({
         voiceoverBaseUri
             .replace(pathSegments: [...voiceoverBaseUri.pathSegments, "${voiceover.fileNameWithoutExtension}.mp3"])
             .toString();
-
+            
     return WpPlayerStream(
       id: 'vo-${voiceover.timing.from.inSeconds}-${voiceover.timing.to.inSeconds}-${voiceover.fileNameWithoutExtension}',
       phase: WpPhase.wpPhaseSession,
@@ -161,7 +161,7 @@ List<WpPlayerStream> _getCustomVoiceoverStreams({
       toTime: voiceover.timing.to,
       fadeOutTime: Duration.zero,
       loopContent: false,
-      gain: voiceover.musicGain ?? 1.0,
+      gain: voiceover.volume ?? 1.0,
       usesSidechain: true,
       sidechainGain: 1.0 - (voiceover.musicGain ?? 1.0),
     );
