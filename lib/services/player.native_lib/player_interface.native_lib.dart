@@ -20,8 +20,6 @@ abstract class INativePlayer {
   /// playing or in the process of starting
   ///
   /// In other words notifies listeners about state change due to call of [start] or [stop] methods
-  ///
-  /// Note: is a static value
   ValueNotifier<bool> get isPlayingState;
 
   /// Network callbacks - are callbacks that are called when library
@@ -51,8 +49,15 @@ abstract class INativePlayer {
   /// **Note**: throws
   set volume(double volume);
 
+  /// Returns [ValueNotifier<WpPhase>] - reflects last set phase
+  ///
+  /// In other words notifies listeners about state change due to call of [changePhaseTo]
+  ValueNotifier<WpPhase> get lastSetPhase;
+
+  /// Shows real player state
+  ///
   /// **Note**: throws
-  WpPhase get phase;
+  WpPhase get realPhasePlayerIn;
 
   /// [at] - offset in phase
   ///

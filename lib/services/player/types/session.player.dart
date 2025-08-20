@@ -28,28 +28,6 @@ class Session {
     required this.sessionName,
   });
 
-  /// Safely calculates session name with fallback logic matching iOS:
-  /// variableInputs.name -> score.name -> "--"
-  static String _calculateSessionName({
-    required SessionVariableInputs? variableInputs,
-    required SessionScore score,
-  }) {
-    try {
-      final variableInputsName = variableInputs?.name?.trim();
-      final scoreName = score.name.trim();
-      
-      if (variableInputsName != null && variableInputsName.isNotEmpty) {
-        return variableInputsName;
-      } else if (scoreName.isNotEmpty) {
-        return scoreName;
-      } else {
-        return "--";
-      }
-    } catch (e) {
-      return "--";
-    }
-  }
-
   /// Returns Uri only when both [userRole] and [renderType] allows to have such url
   Uri? getProviderControlUri(UserRole userRole, ExternalOrchestratorEnvironment environment) {
     if (userRole != UserRole.provider || renderType != SessionRenderType.predictiveComposed) return null;
@@ -100,10 +78,7 @@ class Session {
       broadcastState = temp;
     }
 
-    final String sessionName = _calculateSessionName(
-      variableInputs: variableInputs,
-      score: score,
-    );
+    final String sessionName = _calculateSessionName(variableInputs: variableInputs, score: score);
 
     return Session(
       id: id,
@@ -116,5 +91,15 @@ class Session {
       endTime: endTime,
       sessionName: sessionName,
     );
+  }
+
+  static String _calculateSessionName({required SessionVariableInputs? variableInputs, required SessionScore score}) {
+    final String? variableInputsName = variableInputs?.name.trim();
+    if (variableInputsName != null && variableInputsName.isNotEmpty) return variableInputsName;
+
+    final scoreName = score.name.trim();
+    if (scoreName.isNotEmpty) return scoreName;
+
+    return "--";
   }
 }

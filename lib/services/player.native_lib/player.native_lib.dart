@@ -38,6 +38,7 @@ class NativeLibraryPlayer implements INativePlayer {
   // Library state
   NativeWpPlayerLibState _playerHandler = ffi.nullptr;
   static final ValueNotifier<bool> _isPlayingState = ValueNotifier(false);
+  static final ValueNotifier<WpPhase> _playingPhase = ValueNotifier(WpPhase.wpPhaseNone);
 
   // Global - data
   ffi.DynamicLibrary _nativeLibrary;
@@ -95,6 +96,7 @@ class NativeLibraryPlayer implements INativePlayer {
     closePlayerNative(_nativeLibrary, _playerHandler);
     _instance = null;
     _isPlayingState.value = false;
+    _playingPhase.value = WpPhase.wpPhaseNone;
   }
 
   static bool isPlayerExist() {
@@ -189,7 +191,10 @@ class NativeLibraryPlayer implements INativePlayer {
   }
 
   @override
-  WpPhase get phase => getPhaseNative(_nativeLibrary, _playerHandler);
+  WpPhase get realPhasePlayerIn => getPhaseNative(_nativeLibrary, _playerHandler);
+
+  @override
+  ValueNotifier<WpPhase> get lastSetPhase => _playingPhase;
 
   @override
   void changePhaseTo(WpPhase phase, {required Duration at}) {

@@ -115,7 +115,7 @@ class PlayerService implements IPlayerService {
   set volume(double volume) => NativeLibraryPlayer().volume = volume;
 
   @override
-  WpPhase get phase => NativeLibraryPlayer().phase;
+  ValueNotifier<WpPhase> get phase => NativeLibraryPlayer().lastSetPhase;
 
   @override
   Duration get timeInPhase => NativeLibraryPlayer().timeInPhase;

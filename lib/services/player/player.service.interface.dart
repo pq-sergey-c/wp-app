@@ -25,7 +25,7 @@ abstract class IPlayerService {
   /// [volume] - value in range [0.0, 1.0]
   set volume(double volume);
 
-  WpPhase get phase;
+  ValueListenable<WpPhase> get phase;
 
   Duration get timeInPhase;
 

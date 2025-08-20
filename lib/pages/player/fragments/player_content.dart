@@ -12,6 +12,7 @@ import 'package:wp_player/pages/player/fragments/track_info_card/track_info_card
 import 'package:wp_player/pages/player/fragments/volume_slider/volume_slider.dart';
 import 'package:wp_player/providers/popup/popup.provider.dart';
 import 'package:wp_player/providers/responsive_layout/responsive_layout.provider.dart';
+import 'package:wp_player/services/player.native_lib/types/phase.native_lib.dart';
 import 'package:wp_player/services/player/player.service.dart';
 import 'package:wp_player/utils/data_format/to_string_formatted/format_duration_minutes_seconds.dart';
 
@@ -33,6 +34,7 @@ class MusicPlayer extends HookConsumerWidget {
     final Duration? duration = useListenable(PlayerService().playbackDurationListenable)?.value;
     final Duration? currentPosition = useListenable(PlayerService().currentPlayTimeListenable)?.value;
     final bool isPlaying = useListenable(PlayerService().isPlayingListenable)?.value ?? false;
+    final WpPhase playerPhase = useListenable(PlayerService().phase).value; // CONTINUE: 1 (here is getter)
 
     final bool isTimeWithHours = duration != null && duration.inHours > 0;
 
@@ -89,6 +91,7 @@ class MusicPlayer extends HookConsumerWidget {
                                   width: columnWidth,
                                   height: columnWidth,
                                   child: PlayerControl(
+                                    // phase: playerPhase // CONTINUE: 2 I suppose we can either make super widget which would select playerControl/other | or just make playerControl to have 3-states
                                     isPlaying: isPlaying,
                                     onPlayPausePressed: togglePlay,
                                     isLocallyControllable: canControlPlayback,

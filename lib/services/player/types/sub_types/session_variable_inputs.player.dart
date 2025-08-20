@@ -6,9 +6,7 @@ class SessionVariableInputs {
   static SessionVariableInputs? fromJson(Map<String, dynamic> json) {
     final dynamic name = json["name"];
 
-    if (name is! String) {
-      return null;
-    }
+    if (name is! String) return null;
 
     return SessionVariableInputs(name: name);
   }
