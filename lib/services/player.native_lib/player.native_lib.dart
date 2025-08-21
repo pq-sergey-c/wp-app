@@ -200,6 +200,7 @@ class NativeLibraryPlayer implements INativePlayer {
   void changePhaseTo(WpPhase phase, {required Duration at}) {
     assert(!at.isNegative, 'at must be >= 0');
     setPhaseNative(_nativeLibrary, _playerHandler, phase, at);
+    _playingPhase.value = phase;
   }
 
   @override

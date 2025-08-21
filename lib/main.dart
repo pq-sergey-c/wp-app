@@ -14,6 +14,7 @@ import 'package:wp_player/styles/app_theme/app_theme.dart';
 
 void main() {
   // side effect: construction of NativeLibraryPlayer
+  // TODO: maybe change to static + volume to be set on start or something?
   NativeLibraryPlayer().setNetworkCallbacks(NetworkService().onNetworkRequest, NetworkService().onNetworkCancel);
   NativeLibraryPlayer().volume = 0.75;
 
