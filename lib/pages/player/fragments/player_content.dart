@@ -35,13 +35,16 @@ class MusicPlayer extends HookConsumerWidget {
     final Duration? currentPosition = useListenable(PlayerService().currentPlayTimeListenable)?.value;
     final bool isPlaying = useListenable(PlayerService().isPlayingListenable)?.value ?? false;
     final WpPhase playerPhase = useListenable(PlayerService().phase).value; // CONTINUE: 1 (here is getter)
-
+    final bool isSessionStarted = (playerPhase != WpPhase.wpPhaseNone && playerPhase != WpPhase.wpPhasePre) || currentPosition != Duration.zero;
+    
     final bool isTimeWithHours = duration != null && duration.inHours > 0;
 
     // controls
     void onVolumeChange(double volume) => PlayerService().volume = volume;
     void togglePlay() {
-      if (isPlaying) {
+      if (!isSessionStarted) {
+        PlayerService().advanceFromPrelude();
+      } else if (isPlaying) {
         PlayerService().pause();
       } else {
         PlayerService().resume();
@@ -91,7 +94,7 @@ class MusicPlayer extends HookConsumerWidget {
                                   width: columnWidth,
                                   height: columnWidth,
                                   child: PlayerControl(
-                                    // phase: playerPhase // CONTINUE: 2 I suppose we can either make super widget which would select playerControl/other | or just make playerControl to have 3-states
+                                    isSessionStarted: isSessionStarted,
                                     isPlaying: isPlaying,
                                     onPlayPausePressed: togglePlay,
                                     isLocallyControllable: canControlPlayback,

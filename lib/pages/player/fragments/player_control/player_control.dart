@@ -8,12 +8,14 @@ class PlayerControl extends StatelessWidget {
   final bool isLocallyControllable;
   final VoidCallback onPlayPausePressed;
   final SessionInfo sessionInfo;
+  final bool isSessionStarted;
 
   const PlayerControl({
     required this.isPlaying,
     required this.onPlayPausePressed,
     required this.isLocallyControllable,
     required this.sessionInfo,
+    required this.isSessionStarted,
     super.key,
   });
 
@@ -26,7 +28,32 @@ class PlayerControl extends StatelessWidget {
           child: GeneratedPlayerCardForSession(sessionInfo: sessionInfo),
         ),
         ...(isLocallyControllable
-            ? [PlayerPlayStopButton(onPlayPausePressed: onPlayPausePressed, isPlaying: isPlaying)]
+            ? [
+                if (!isSessionStarted)
+                  Center(
+                    child: InkWell(
+                      onTap: onPlayPausePressed,
+                      borderRadius: BorderRadius.circular(25),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary,
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                        child: Text(
+                          'Start Session',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onPrimary,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  PlayerPlayStopButton(onPlayPausePressed: onPlayPausePressed, isPlaying: isPlaying)
+              ]
             : []),
       ],
     );

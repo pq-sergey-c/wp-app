@@ -16,7 +16,7 @@
 
 // =====================[ Miniaudio setup ]=====================
 
-// #define MA_NO_AAUDIO // uncomment out to disable new android audio backend
+#define MA_NO_AAUDIO // uncomment out to disable new android audio backend
 
 #define MA_NO_ENCODING
 

@@ -128,12 +128,14 @@ class NativeLibraryPlayer implements INativePlayer {
 
   @override
   bool start() {
+    if (_isPlayingState.value) return false;
     _isPlayingState.value = true;
     return startPlayerNative(_nativeLibrary, _playerHandler);
   }
 
   @override
   bool stop() {
+    if (!_isPlayingState.value) return false;
     _isPlayingState.value = false;
     return stopPlayerNative(_nativeLibrary, _playerHandler);
   }
