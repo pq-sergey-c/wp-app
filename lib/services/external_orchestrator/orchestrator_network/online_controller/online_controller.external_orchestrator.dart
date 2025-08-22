@@ -84,7 +84,7 @@ class ExternalOrchestratorOnlineController implements IExternalOrchestratorContr
 
   @override
   void broadcastUserAdvanceFromPrelude() {
-    _socket?.emit("broadcastUserAdvanceFromPrelude");
+    _socket?.emit("broadcastUserAdvanceFromPrelude", {"allowControl": true});
   }
 
   @override
