@@ -34,7 +34,6 @@ class ConnectPageContent extends ConsumerWidget {
     ], fallback: MainAxisAlignment.spaceBetween);
 
     final width = layout.selectByScreenType(orElse: layout.getClampedWidth(percent: 80, max: 450));
-    final widthOfInstructions = layout.selectByScreenType(desktop: layout.screenWidth, orElse: width);
 
     return Column(
       mainAxisAlignment: alignment,
@@ -51,26 +50,36 @@ class ConnectPageContent extends ConsumerWidget {
           ),
         ),
 
-        if (layout.screenHeight >= 750) ...[
-          SizedBox(
-            width: width,
-            child: Text(
-              userRole == UserRole.listener ? "Start streaming\nas a Listener" : "Start streaming\nas a Provider",
-              style: TextStyle(
-                fontSize: layout.getTextSize(layout.selectByScreenType(desktop: TextSizes.xl2, orElse: TextSizes.xl)),
-                fontVariations: [FontVariationWeight.w700()],
-                height: 1.2,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ],
-
-        SizedBox(width: widthOfInstructions, child: ConnectPageInstruction(userRole: userRole)),
-        SizedBox(width: width, child: AdditionalInfo(userRole: userRole)),
         SizedBox(
           width: width,
-          child: ConnectPageAction(showLoadingPopup: showLoadingPopup, showFailPopup: showFailPopup),
+          child: Text(
+            userRole == UserRole.listener ? "Start streaming\nas a Listener" : "Start streaming\nas a Provider",
+            style: TextStyle(
+              fontSize: layout.getTextSize(layout.selectByScreenType(desktop: TextSizes.xl2, orElse: TextSizes.xl)),
+              fontVariations: [FontVariationWeight.w700()],
+              height: 1.2,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+
+        Center(
+          child: SizedBox(
+            width: 360,
+            child: ConnectPageInstruction(userRole: userRole),
+          ),
+        ),
+        Center(
+          child: SizedBox(
+            width: 360,
+            child: AdditionalInfo(userRole: userRole),
+          ),
+        ),
+        Center(
+          child: SizedBox(
+            width: 360,
+            child: ConnectPageAction(showLoadingPopup: showLoadingPopup, showFailPopup: showFailPopup),
+          ),
         ),
       ],
     );

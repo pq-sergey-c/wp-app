@@ -45,6 +45,8 @@ abstract class IPlayerService {
   /// Report that websocket connection has been restored
   void reportConnectionRestored();
 
+  bool get isOffline;
+
   ValueListenable<bool>? get isConnectionInterruptedListenable;
 
   set streamingType(UserRole userRole); // TODO: remove once this info is obtained from link / QR

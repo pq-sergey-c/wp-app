@@ -14,7 +14,7 @@ Future<Session?> fetchSession(final LinkSessionInfo linkSessionInfo) async {
   final sessionInfoUrl = orchestrator.replace(
     pathSegments: [...orchestrator.pathSegments, 'sessions', 'my', linkSessionInfo.broadcastId],
   );
-
+  
   final sessionInfoResponse = await http.get(sessionInfoUrl, headers: {'Authorization': 'anonymous $anonymousToken'});
 
   if (sessionInfoResponse.statusCode != 200) {

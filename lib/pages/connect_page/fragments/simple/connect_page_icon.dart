@@ -16,22 +16,22 @@ class ConnectPageIcon extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final layout = ref.watch(responsiveLayoutProvider);
 
-    final iconSize = min(
-      layout.getClampedWidth(percent: 10),
-      layout.getClampedHeight(percent: isSmallVariant ? 8 : 10),
-    ).clamp(60.0, 70.0);
+    // final iconSize = min(
+    //   layout.getClampedWidth(percent: 5),
+    //   layout.getClampedHeight(percent: 5),
+    // ).clamp(40.0, 40.0);
 
     return Container(
-      width: iconSize,
-      height: iconSize,
+      width: 60,
+      height: 60,
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.all(Radius.circular(iconSize / 5.5)),
+        borderRadius: BorderRadiusGeometry.circular(16),
       ),
       child: Align(
         child: SvgPicture.asset(
-          width: iconSize / 1.5,
-          height: iconSize / 1.5,
+          width: 25,
+          height: 25,
           iconPath,
           colorFilter: const ColorFilter.mode(AppColors.blueIron, BlendMode.srcIn),
         ),

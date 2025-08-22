@@ -36,13 +36,13 @@ class MusicPlayer extends HookConsumerWidget {
     final bool isPlaying = useListenable(PlayerService().isPlayingListenable)?.value ?? false;
     final WpPhase playerPhase = useListenable(PlayerService().phase).value; // CONTINUE: 1 (here is getter)
     final bool isSessionStarted = (playerPhase != WpPhase.wpPhaseNone && playerPhase != WpPhase.wpPhasePre) || currentPosition != Duration.zero;
-    
+    final bool isOffline = PlayerService().isOffline;
     final bool isTimeWithHours = duration != null && duration.inHours > 0;
 
     // controls
     void onVolumeChange(double volume) => PlayerService().volume = volume;
     void togglePlay() {
-      if (!isSessionStarted) {
+      if (!isSessionStarted && !isOffline) {
         PlayerService().advanceFromPrelude();
       } else if (isPlaying) {
         PlayerService().pause();

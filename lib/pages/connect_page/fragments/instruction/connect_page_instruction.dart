@@ -19,11 +19,11 @@ class ConnectPageInstruction extends ConsumerWidget {
 
     return userRole == UserRole.listener
         ? layout.selectByScreenType(
-          desktop: const ConnectPageInstructionWideListener(),
+          desktop: const ConnectPageInstructionNarrowListener(),
           orElse: const ConnectPageInstructionNarrowListener(),
         )
         : layout.selectByScreenType(
-          desktop: const ConnectPageInstructionWideProvider(),
+          desktop: const ConnectPageInstructionNarrowProvider(),
           orElse: const ConnectPageInstructionNarrowProvider(),
         );
   }

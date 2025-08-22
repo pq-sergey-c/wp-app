@@ -71,7 +71,7 @@ class ExternalLinkBox extends ConsumerWidget {
             SvgPicture.asset(
               'assets/images/external_link.svg',
               colorFilter: ColorFilter.mode(themeMode.themeConfig.text, BlendMode.srcIn),
-              height: layout.getTextSize(TextSizes.xl2),
+              height: layout.getTextSize(TextSizes.sm),
             ),
           ],
         ),

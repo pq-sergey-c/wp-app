@@ -150,7 +150,7 @@ class PlayerService implements IPlayerService {
   @override
   bool get canControlPlayback {
     _assertSessionAndSessionInfoExist();
-    return _isOffline || _session!.canClientStartEarly;
+    return isOffline || _session!.canClientStartEarly;
     // return _isOffline || _session!.canClientStartEarly || (!_isOffline && _userRole == UserRole.provider);
   }
 
@@ -163,12 +163,13 @@ class PlayerService implements IPlayerService {
   @override
   ValueListenable<bool>? get isConnectionInterruptedListenable => _isConnectionInterruptedNotifier;
 
-  // -----------------------------------------------------------
-
-  bool get _isOffline {
+  @override
+  bool get isOffline {
     _assertSessionAndSessionInfoExist();
     return _session!.renderType == SessionRenderType.preRendered || _session!.endTime != null;
   }
+
+  // -----------------------------------------------------------
 
   Future<void> _startSession(LinkSessionInfo linkSessionInfo, Session session) async {
     await disconnect();
@@ -182,7 +183,6 @@ class PlayerService implements IPlayerService {
     _playbackDurationNotifier = ValueNotifier(null);
     _isConnectionInterruptedNotifier = ValueNotifier(false);
 
-    final bool isOffline = _isOffline;
     NativeLibraryPlayer.rebuild(bufferingLookahead: isOffline ? bufferingLookaheadOffline : bufferingLookaheadOnline);
 
     _latestBroadcastState = _session!.broadcastState;

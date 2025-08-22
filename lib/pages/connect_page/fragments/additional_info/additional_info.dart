@@ -31,20 +31,14 @@ class AdditionalInfo extends ConsumerWidget {
         ExternalLinkBox(
           text: const TextSpan(text: "Start a new session"),
           externalLink: ExternalLinks.startNewSessionFromTemplates.uri,
-          height: layout.getClampedHeight(percent: 7, min: 52, max: 56),
-          width: layout.getClampedWidth(percent: 80, max: 500),
         ),
         ExternalLinkBox(
           text: const TextSpan(text: "Or stream an active session"),
           externalLink: ExternalLinks.currentUserSessions.uri,
-          height: layout.getClampedHeight(percent: 7, min: 52, max: 56),
-          width: layout.getClampedWidth(percent: 80, max: 500),
         ),
         ExternalLinkBox(
           text: const TextSpan(text: "Subscribe if you haven’t already"),
           externalLink: ExternalLinks.subscriptionsPage.uri,
-          height: layout.getClampedHeight(percent: 7, min: 52, max: 56),
-          width: layout.getClampedWidth(percent: 80, max: 500),
         ),
       ],
     );
