@@ -5,7 +5,7 @@ publish_to: "none" # Don't remove this line
 
 # Update both versionName (seen by user) and versionCode on new version
 # version: major.minor.patch+yyyymmddaa - where aa is two numbered version on this date
-version: 0.2.5+2025082201
+version: 0.2.6+2025082202
 
 environment:
   sdk: ^3.7.0

@@ -150,8 +150,7 @@ class PlayerService implements IPlayerService {
   @override
   bool get canControlPlayback {
     _assertSessionAndSessionInfoExist();
-    return isOffline || _session!.canClientStartEarly;
-    // return _isOffline || _session!.canClientStartEarly || (!_isOffline && _userRole == UserRole.provider);
+    return isOffline || _session!.canClientStartEarly || (!isOffline && _userRole == UserRole.provider);
   }
 
   @override
