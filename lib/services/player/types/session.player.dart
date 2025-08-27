@@ -15,6 +15,8 @@ class Session {
   final Duration duration;
   final DateTime? endTime;
   final String sessionName;
+  final String providerName;
+  final String providerImageUrl;
 
   const Session({
     required this.id,
@@ -26,6 +28,8 @@ class Session {
     required this.duration,
     required this.endTime,
     required this.sessionName,
+    required this.providerName,
+    required this.providerImageUrl,
   });
 
   /// Returns Uri only when both [userRole] and [renderType] allows to have such url
@@ -42,6 +46,8 @@ class Session {
     final dynamic variableInputsJson = json["variableInputs"];
     final dynamic canClientStartEarly = json["canClientStartEarly"];
     final dynamic broadcastStateJson = json["broadcastState"];
+    final dynamic providerName = json["providerName"] ?? "Wavepaths user";
+    final dynamic providerImageUrl = json["providerImageUrl"] ?? "";
 
     // json type check
     if (id is! String ||
@@ -90,6 +96,8 @@ class Session {
       duration: duration,
       endTime: endTime,
       sessionName: sessionName,
+      providerName: providerName,
+      providerImageUrl: providerImageUrl,
     );
   }
 

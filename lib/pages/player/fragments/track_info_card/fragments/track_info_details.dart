@@ -60,11 +60,38 @@ class TrackInfoDetails extends ConsumerWidget {
                 height: 54,
                 child:
                     sessionInfo.imageUrl.isNotEmpty
-                        ? Image.network(sessionInfo.imageUrl, fit: BoxFit.cover)
+                        ? Image.network(
+                            sessionInfo.imageUrl, 
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return ColoredBox(
+                                color: AppColors.greyFog,
+                                child: Icon(
+                                  Icons.music_note, 
+                                  size: 24, 
+                                  color: themeMode.themeConfig.primary
+                                ),
+                              );
+                            },
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return ColoredBox(
+                                color: AppColors.greyFog,
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    value: loadingProgress.expectedTotalBytes != null
+                                        ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                        : null,
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              );
+                            },
+                          )
                         : ColoredBox(
-                          color: AppColors.greyFog,
-                          child: Icon(Icons.music_note, size: 24, color: themeMode.themeConfig.primary),
-                        ),
+                            color: AppColors.greyFog,
+                            child: Icon(Icons.music_note, size: 24, color: themeMode.themeConfig.primary),
+                          ),
               ),
             ),
 

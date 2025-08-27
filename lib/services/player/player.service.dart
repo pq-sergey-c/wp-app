@@ -137,9 +137,9 @@ class PlayerService implements IPlayerService {
       id: _session!.id,
       title: _session!.sessionName,
       sessionType: _session!.renderType,
-      artist: _fakeArtist,
+      artist: _session!.providerName.isNotEmpty ? _session!.providerName : _fakeArtist,
       deviceInfo: "Desktop → iPhone 16",
-      imageUrl: "",
+      imageUrl: _session!.providerImageUrl.isNotEmpty ? _session!.providerImageUrl : "",
       atmosphereColors: _session!.score.atmosphereColors,
       emotionalIntensity: _session!.score.emotionalIntensity,
       userRole: _userRole,
@@ -203,7 +203,7 @@ class PlayerService implements IPlayerService {
         broadcastState: _session!.broadcastState,
         sessionDuration: _session!.duration,
         sessionScore: _session!.score,
-        artist: _fakeArtist,
+        artist: _session!.providerName.isNotEmpty ? _session!.providerName : _fakeArtist,
         sessionName: _session!.sessionName,
       );
     }
@@ -217,7 +217,7 @@ class PlayerService implements IPlayerService {
       broadcastId: _linkSessionInfo!.broadcastId,
       sessionId: _session!.id,
       sessionScore: _session!.score,
-      artist: _fakeArtist,
+      artist: _session!.providerName.isNotEmpty ? _session!.providerName : _fakeArtist,
       sessionName: _session!.sessionName,
     );
   }
