@@ -138,7 +138,7 @@ class PlayerService implements IPlayerService {
       title: _session!.sessionName,
       sessionType: _session!.renderType,
       artist: _session!.providerName.isNotEmpty ? _session!.providerName : _fakeArtist,
-      deviceInfo: "Desktop → iPhone 16",
+      deviceInfo: "Desktop → Mobile",
       imageUrl: _session!.providerImageUrl.isNotEmpty ? _session!.providerImageUrl : "",
       atmosphereColors: _session!.score.atmosphereColors,
       emotionalIntensity: _session!.score.emotionalIntensity,
