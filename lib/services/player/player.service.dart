@@ -70,7 +70,7 @@ class PlayerService implements IPlayerService {
 
   // Data from native player
   AsyncNotifierPoller<Duration>? _bufferedTimeNotifierPoller;
-  static const Duration _bufferedTimePollingInterval = Duration(seconds: 5);
+  static const Duration _bufferedTimePollingInterval = Duration(milliseconds: 490);
 
   static const int bufferingLookaheadOffline = 10 * 60 * 60;
   static const int bufferingLookaheadOnline = 20 * 60;
