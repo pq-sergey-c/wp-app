@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:wp_player/components/controls/external_link_box.dart';
+import 'package:wp_player/pages/player/fragments/buffer_time/buffer_time.dart';
 import 'package:wp_player/pages/player/fragments/playback_timer/playback_timer.dart';
 import 'package:wp_player/pages/player/fragments/player_control/player_control.dart';
 import 'package:wp_player/pages/player/fragments/title_and_logo/section_title.dart';
@@ -14,7 +15,6 @@ import 'package:wp_player/providers/popup/popup.provider.dart';
 import 'package:wp_player/providers/responsive_layout/responsive_layout.provider.dart';
 import 'package:wp_player/services/player.native_lib/types/phase.native_lib.dart';
 import 'package:wp_player/services/player/player.service.dart';
-import 'package:wp_player/utils/data_format/to_string_formatted/format_duration_minutes_seconds.dart';
 
 class MusicPlayer extends HookConsumerWidget {
   const MusicPlayer({super.key});
@@ -24,44 +24,31 @@ class MusicPlayer extends HookConsumerWidget {
     final layout = ref.watch(responsiveLayoutProvider);
     final popup = ref.watch(popupProvider.notifier);
 
-    // useMemoized here because on pop of page - while [build] is still called - PlayerService is already disconnected
+    // useMemoized is used here because of onPop event of current page - while [build] is still called - PlayerService is already disconnected
     final sessionInfo = useMemoized(() => PlayerService().sessionInformation, []);
     final canControlPlayback = useMemoized(() => PlayerService().canControlPlayback, []);
     final startVolume = useMemoized(() => PlayerService().volume, []);
     final providerControlUri = sessionInfo.providerControlUri;
 
-    // listen to notifiers
-    final Duration? duration = useListenable(PlayerService().playbackDurationListenable)?.value;
-    final Duration? currentPosition = useListenable(PlayerService().currentPlayTimeListenable)?.value;
-    final bool isPlaying = useListenable(PlayerService().isPlayingListenable)?.value ?? false;
-    final WpPhase playerPhase = useListenable(PlayerService().phase).value; // CONTINUE: 1 (here is getter)
-    final bool isSessionStarted = (playerPhase != WpPhase.wpPhaseNone && playerPhase != WpPhase.wpPhasePre) || currentPosition != Duration.zero;
-    final bool isOffline = PlayerService().isOffline;
-    final bool isTimeWithHours = duration != null && duration.inHours > 0;
-
     // controls
     void onVolumeChange(double volume) => PlayerService().volume = volume;
-    void togglePlay() {
-      if (!isSessionStarted && !isOffline) {
-        PlayerService().advanceFromPrelude();
-      } else if (isPlaying) {
-        PlayerService().pause();
-      } else {
-        PlayerService().resume();
-      }
-    }
 
-    const double volumeSliderHeight = 60;
-    const double trackInfoCardHeight = 65;
+    const double volumeSliderHeight = 40;
+    const double trackInfoCardHeight = 45;
     final double externalLinkMaxHeight = providerControlUri != null ? 120 : 0;
-    final double spacing = layout.getClampedHeight(percent: 3);
+    const double bufferTextHeight = 20;
+
+    final playerControlHeightToExclude =
+        volumeSliderHeight + trackInfoCardHeight + externalLinkMaxHeight + bufferTextHeight;
+
+    final double spacing = layout.getClampedHeight(percent: 2.5);
 
     return Column(
       spacing: spacing,
       children: [
         PlaybackTimer(
-          currentTime: formatDuration(currentPosition, withHours: isTimeWithHours),
-          totalTime: formatDuration(duration, withHours: isTimeWithHours),
+          currentTimeListenable: PlayerService().currentPlayTimeListenable,
+          totalTimeListenable: PlayerService().playbackDurationListenable,
         ),
 
         Flexible(
@@ -73,9 +60,9 @@ class MusicPlayer extends HookConsumerWidget {
               Flexible(
                 child: LayoutBuilder(
                   builder: (context, constraints) {
-                    final maxHeight =
-                        constraints.maxHeight - volumeSliderHeight - trackInfoCardHeight - externalLinkMaxHeight;
+                    final maxHeight = constraints.maxHeight - playerControlHeightToExclude;
                     final columnWidth = min(constraints.maxWidth, maxHeight);
+
                     return Column(
                       spacing: layout.getClampedHeight(percent: 3),
                       children: [
@@ -94,11 +81,13 @@ class MusicPlayer extends HookConsumerWidget {
                                   width: columnWidth,
                                   height: columnWidth,
                                   child: PlayerControl(
-                                    isSessionStarted: isSessionStarted,
-                                    isPlaying: isPlaying,
-                                    onPlayPausePressed: togglePlay,
+                                    isPlayingListenable: PlayerService().isPlayingListenable,
+                                    onPlayPausePressed: _togglePlay,
                                     isLocallyControllable: canControlPlayback,
                                     sessionInfo: sessionInfo,
+                                    currentPositionListenable: PlayerService().currentPlayTimeListenable,
+                                    phaseListenable: PlayerService().phase,
+                                    isSessionStartedFunction: _isSessionStarted,
                                   ),
                                 ),
                               ),
@@ -107,6 +96,12 @@ class MusicPlayer extends HookConsumerWidget {
                                 height: volumeSliderHeight,
                                 width: columnWidth,
                                 child: VolumeSlider(startVolume: startVolume, onVolumeChanged: onVolumeChange),
+                              ),
+
+                              SizedBox(
+                                height: bufferTextHeight,
+                                width: columnWidth,
+                                child: BufferTimeWidget(bufferTimeListenable: PlayerService().bufferedTimeListenable),
                               ),
 
                               if (providerControlUri != null) ...[
@@ -132,9 +127,29 @@ class MusicPlayer extends HookConsumerWidget {
             ],
           ),
         ),
-
         const WavePathsLogo(),
       ],
     );
+  }
+
+  static bool _isSessionStarted(WpPhase phase, Duration currentPosition) {
+    const nonStartedPhases = [WpPhase.wpPhaseNone, WpPhase.wpPhasePre];
+    return currentPosition > Duration.zero || !nonStartedPhases.contains(phase);
+  }
+
+  static void _togglePlay() {
+    final bool isOffline = PlayerService().isOffline;
+    final bool isSessionStarted = _isSessionStarted(
+      PlayerService().phase.value,
+      PlayerService().currentPlayTimeListenable?.value ?? Duration.zero,
+    );
+
+    if (!isSessionStarted && !isOffline) {
+      PlayerService().advanceFromPrelude();
+    } else if (PlayerService().isPlayingListenable?.value ?? false) {
+      PlayerService().pause();
+    } else {
+      PlayerService().resume();
+    }
   }
 }

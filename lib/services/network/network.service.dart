@@ -83,8 +83,4 @@ class NetworkService implements INetworkService {
       isSuccessful: resultTuple.success,
     );
   }
-
-  // ------------------------------------------------
-  // CONTINUE: 4 add 3-rd here
-  // CONTINUE: 5 (and then it can be used as NetworkService().whateverYouWouldNameIt(PlayerService().sessionInfo))
 }

@@ -3,7 +3,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wp_player/components/controls/external_link_box.dart';
 import 'package:wp_player/constants/external_links.dart';
-import 'package:wp_player/providers/responsive_layout/responsive_layout.provider.dart';
 import 'package:wp_player/providers/theme_mode/theme_mode.provider.dart';
 import 'package:wp_player/types/session/user_role/user_role.dart';
 
@@ -14,7 +13,6 @@ class AdditionalInfo extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final layout = ref.watch(responsiveLayoutProvider);
     final themeMode = ref.watch(themeModeProvider);
 
     if (userRole == UserRole.listener) {

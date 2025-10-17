@@ -3,8 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:wp_player/pages/connect_page/fragments/instruction/fragments/connect_page_instruction_narrow_listener.dart';
 import 'package:wp_player/pages/connect_page/fragments/instruction/fragments/connect_page_instruction_narrow_provider.dart';
-import 'package:wp_player/pages/connect_page/fragments/instruction/fragments/connect_page_instruction_wide_listener.dart';
-import 'package:wp_player/pages/connect_page/fragments/instruction/fragments/connect_page_instruction_wide_provider.dart';
+// TODO: access imports
+// import 'package:wp_player/pages/connect_page/fragments/instruction/fragments/connect_page_instruction_wide_listener.dart'; // if removed also delete file
+// import 'package:wp_player/pages/connect_page/fragments/instruction/fragments/connect_page_instruction_wide_provider.dart'; // if removed also delete file
 import 'package:wp_player/providers/responsive_layout/responsive_layout.provider.dart';
 import 'package:wp_player/types/session/user_role/user_role.dart';
 

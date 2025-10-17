@@ -1,9 +1,6 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:wp_player/providers/responsive_layout/responsive_layout.provider.dart';
 import 'package:wp_player/styles/colors/colors.dart';
 
 class ConnectPageIcon extends ConsumerWidget {
@@ -14,7 +11,7 @@ class ConnectPageIcon extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final layout = ref.watch(responsiveLayoutProvider);
+    // final layout = ref.watch(responsiveLayoutProvider);
 
     // final iconSize = min(
     //   layout.getClampedWidth(percent: 5),
@@ -24,10 +21,7 @@ class ConnectPageIcon extends ConsumerWidget {
     return Container(
       width: 60,
       height: 60,
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadiusGeometry.circular(16),
-      ),
+      decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadiusGeometry.circular(16)),
       child: Align(
         child: SvgPicture.asset(
           width: 25,

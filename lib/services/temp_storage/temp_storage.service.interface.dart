@@ -5,5 +5,6 @@
 /// temporary directory remains clean
 abstract class ITempStorageService {
   /// [Future<String>] - returns absolute path to file
+  /// fileName - is end fileName of file (if you need provide extension as part of name)
   Future<String> writeFileToTempDir(List<int> data, {required String fileName});
 }

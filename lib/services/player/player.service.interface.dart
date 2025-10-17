@@ -35,6 +35,8 @@ abstract class IPlayerService {
 
   ValueListenable<Duration?>? get playbackDurationListenable;
 
+  ValueListenable<Duration?>? get bufferedTimeListenable;
+
   SessionInfo get sessionInformation;
 
   bool get canControlPlayback;

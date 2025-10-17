@@ -15,6 +15,7 @@ import 'package:wp_player/services/player/types/sub_types/voiceover_stage.player
 import 'package:wp_player/types/session/session_info/session_info.dart';
 import 'package:wp_player/types/session/session_render_type/session_render_type.dart';
 import 'package:wp_player/types/session/user_role/user_role.dart';
+import 'package:wp_player/utils/async/poller/async_notifier_poller.dart';
 import 'package:wp_player/utils/logger/logger.dart';
 
 const _fakeArtist = "Dr. Henry";
@@ -42,6 +43,8 @@ class PlayerService implements IPlayerService {
     _playbackDurationNotifier = null;
     _isConnectionInterruptedNotifier?.dispose();
     _isConnectionInterruptedNotifier = null;
+    _bufferedTimeNotifierPoller?.dispose();
+    _bufferedTimeNotifierPoller = null;
 
     await _orchestrator?.dispose();
     _orchestrator = null;
@@ -64,6 +67,10 @@ class PlayerService implements IPlayerService {
   ValueNotifier<Duration?>? _currentPlayTimeNotifier;
   ValueNotifier<Duration?>? _playbackDurationNotifier;
   ValueNotifier<bool>? _isConnectionInterruptedNotifier; // websocket connection
+
+  // Data from native player
+  AsyncNotifierPoller<Duration>? _bufferedTimeNotifierPoller;
+  static const Duration _bufferedTimePollingInterval = Duration(seconds: 5);
 
   static const int bufferingLookaheadOffline = 10 * 60 * 60;
   static const int bufferingLookaheadOnline = 20 * 60;
@@ -168,6 +175,9 @@ class PlayerService implements IPlayerService {
     return _session!.renderType == SessionRenderType.preRendered || _session!.endTime != null;
   }
 
+  @override
+  ValueListenable<Duration?>? get bufferedTimeListenable => _bufferedTimeNotifierPoller?.listenable;
+
   // -----------------------------------------------------------
 
   Future<void> _startSession(LinkSessionInfo linkSessionInfo, Session session) async {
@@ -183,6 +193,12 @@ class PlayerService implements IPlayerService {
     _isConnectionInterruptedNotifier = ValueNotifier(false);
 
     NativeLibraryPlayer.rebuild(bufferingLookahead: isOffline ? bufferingLookaheadOffline : bufferingLookaheadOnline);
+
+    _bufferedTimeNotifierPoller = AsyncNotifierPoller(
+      getValueFunction: () => !NativeLibraryPlayer.isPlayerExist() ? null : NativeLibraryPlayer().bufferedTime,
+      interval: _bufferedTimePollingInterval,
+      name: 'Buffered time (poller of native player value)',
+    )..start();
 
     _latestBroadcastState = _session!.broadcastState;
     _orchestrator = await _makeExternalOrchestrator(isOffline: isOffline);
