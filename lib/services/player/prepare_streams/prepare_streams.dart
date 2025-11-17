@@ -13,6 +13,10 @@ const _freeVoiceoverDuration = Duration(minutes: 1);
 const _freeVoiceoverEvery = Duration(minutes: 20);
 const _freeVoiceoverStartOffset = Duration(seconds: 5);
 
+const _preludeStreamId = "prelude";
+const _postludeStreamId = "postlude";
+const _postludePreludeAudioFile = "assets/audio/prelude_postlude_30m.mp3";
+
 List<WpPlayerStream> getStreams({
   required final SessionBroadcastState? latestBroadcastState,
   required final ExternalOrchestratorEnvironment orchestratorEnvironment,
@@ -46,11 +50,10 @@ List<WpPlayerStream> getStreams({
 // --------------------------------------------------------------------------
 
 WpPlayerStream _getPreludeStream() {
-  const String url = "assets/audio/prelude_postlude_30m.mp3";
-  final String prefixedUrl = NetworkUrlPrefixes.localFile.addPrefix(url);
+  final String prefixedUrl = NetworkUrlPrefixes.localFile.addPrefix(_postludePreludeAudioFile);
 
   return WpPlayerStream(
-    id: "prelude",
+    id: _preludeStreamId,
     phase: WpPhase.wpPhasePre,
     url: prefixedUrl,
     fromTime: Duration.zero,
@@ -64,11 +67,10 @@ WpPlayerStream _getPreludeStream() {
 }
 
 WpPlayerStream _getPostludeStream() {
-  const String url = "assets/audio/prelude_postlude_30m.mp3";
-  final String prefixedUrl = NetworkUrlPrefixes.localFile.addPrefix(url);
+  final String prefixedUrl = NetworkUrlPrefixes.localFile.addPrefix(_postludePreludeAudioFile);
 
   return WpPlayerStream(
-    id: "prelude",
+    id: _postludeStreamId,
     phase: WpPhase.wpPhasePost,
     url: prefixedUrl,
     fromTime: Duration.zero,
@@ -152,7 +154,7 @@ List<WpPlayerStream> _getCustomVoiceoverStreams({
         voiceoverBaseUri
             .replace(pathSegments: [...voiceoverBaseUri.pathSegments, "${voiceover.fileNameWithoutExtension}.mp3"])
             .toString();
-            
+
     return WpPlayerStream(
       id: 'vo-${voiceover.timing.from.inSeconds}-${voiceover.timing.to.inSeconds}-${voiceover.fileNameWithoutExtension}',
       phase: WpPhase.wpPhaseSession,

@@ -5,7 +5,6 @@ class NetworkTick {
   final Duration timeUntilStart;
   final Duration effectiveTime;
   final Duration absoluteTime;
-  final Duration timeSinceInit;
   final Duration sessionDuration;
 
   const NetworkTick({
@@ -13,7 +12,6 @@ class NetworkTick {
     required this.timeUntilStart,
     required this.effectiveTime,
     required this.absoluteTime,
-    required this.timeSinceInit,
     required this.sessionDuration,
   });
 
@@ -21,7 +19,6 @@ class NetworkTick {
     : timeUntilStart = Duration.zero,
       effectiveTime = Duration.zero,
       absoluteTime = Duration.zero,
-      timeSinceInit = Duration.zero,
       sessionDuration = Duration.zero;
 
   static NetworkTick? fromJson(Map<String, dynamic> json) {
@@ -29,14 +26,12 @@ class NetworkTick {
     final timeUntilStartMillisecondsJson = json["timeUntilStart"];
     final effectiveTimeMillisecondsJson = json["effectiveTime"];
     final absoluteTimeMillisecondsJson = json["absoluteTime"];
-    final timeSinceInitMillisecondsJson = json["timeSinceInit"];
     final sessionDurationMillisecondsJson = json["sessionDuration"];
 
     if (sessionStateJson is! String ||
         timeUntilStartMillisecondsJson is! num ||
         effectiveTimeMillisecondsJson is! num ||
         absoluteTimeMillisecondsJson is! num ||
-        timeSinceInitMillisecondsJson is! num ||
         sessionDurationMillisecondsJson is! num) {
       return null;
     }
@@ -47,7 +42,6 @@ class NetworkTick {
     final timeUntilStart = Duration(milliseconds: timeUntilStartMillisecondsJson.toInt());
     final effectiveTime = Duration(milliseconds: effectiveTimeMillisecondsJson.toInt());
     final absoluteTime = Duration(milliseconds: absoluteTimeMillisecondsJson.toInt());
-    final timeSinceInit = Duration(milliseconds: timeSinceInitMillisecondsJson.toInt());
     final sessionDuration = Duration(milliseconds: sessionDurationMillisecondsJson.toInt());
 
     return NetworkTick(
@@ -55,7 +49,6 @@ class NetworkTick {
       timeUntilStart: timeUntilStart,
       effectiveTime: effectiveTime,
       absoluteTime: absoluteTime,
-      timeSinceInit: timeSinceInit,
       sessionDuration: sessionDuration,
     );
   }
@@ -66,7 +59,6 @@ class NetworkTick {
       'timeUntilStart': timeUntilStart.inMilliseconds,
       'effectiveTime': effectiveTime.inMilliseconds,
       'absoluteTime': absoluteTime.inMilliseconds,
-      'timeSinceInit': timeSinceInit.inMilliseconds,
       'sessionDuration': sessionDuration.inMilliseconds,
     };
   }

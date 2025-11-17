@@ -5,11 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wp_player/providers/theme_mode/types/theme_mode.state.dart';
 
-class ThemeModeNotifier extends StateNotifier<ThemeModeState> {
+class ThemeModeNotifier extends Notifier<ThemeModeState> {
   static const _preferencesKey = 'theme_mode';
 
-  ThemeModeNotifier() : super(ThemeModeState.light) {
+  @override
+  ThemeModeState build() {
     unawaited(_loadTheme()); // fire-and-forget
+    return ThemeModeState.light;
   }
 
   // ---------------------------------------------------------------------------

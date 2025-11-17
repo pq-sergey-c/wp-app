@@ -2,10 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:mutex/mutex.dart';
 import 'package:wp_player/services/external_orchestrator/external_orchestrator.service.interface.dart';
+import 'package:wp_player/services/external_orchestrator/implementations/helpers/handle_player_from_network_tick.external_orchestrator.dart';
 import 'package:wp_player/services/external_orchestrator/types/callbacks.external_orchestrator.dart';
 import 'package:wp_player/services/external_orchestrator/types/enums/foreground_service_callback.external_orchestrator.dart';
 import 'package:wp_player/services/external_orchestrator/types/enums/foreground_service_method.external_orchestrator.dart';
-import 'package:wp_player/services/external_orchestrator/types/enums/network_session_state.external_orchestrator.dart';
 import 'package:wp_player/services/external_orchestrator/types/foreground_service_startup_params.dart';
 import 'package:wp_player/services/external_orchestrator/utils/foreground_service_runner/serialize_deserialize/callbacks/log.dart';
 import 'package:wp_player/services/external_orchestrator/utils/foreground_service_runner/serialize_deserialize/callbacks/process_network_tick.dart';
@@ -17,9 +17,6 @@ import 'package:wp_player/services/external_orchestrator/utils/foreground_servic
 import 'package:wp_player/services/external_orchestrator/utils/foreground_service_runner/serialize_deserialize/methods/startup.dart';
 import 'package:wp_player/services/external_orchestrator/utils/foreground_service_runner/serialize_deserialize/validate_message_and_get_type.dart';
 import 'package:wp_player/services/foreground_kotlin/foreground_kotlin.service.dart';
-import 'package:wp_player/services/player.native_lib/player.native_lib.dart';
-import 'package:wp_player/services/player.native_lib/types/phase.native_lib.dart';
-import 'package:wp_player/services/player/player.service.dart';
 import 'package:wp_player/services/player/types/enums/external_orchestrator_environment.player.dart';
 import 'package:wp_player/services/player/types/sub_types/session_broadcast_state.player.dart';
 import 'package:wp_player/services/player/types/sub_types/session_score.player.dart';
@@ -95,35 +92,7 @@ class ExternalOrchestratorRunnerForegroundService implements IExternalOrchestrat
 
   void _handleProcessNetworkTick(Map<String, dynamic> json) {
     final tick = deserializeProcessNetworkTick(json);
-
-    final isConnectionInterrupted = PlayerService().isConnectionInterruptedListenable?.value ?? true;
-    if (isConnectionInterrupted && tick.sessionState != NetworkSessionState.connectionEstablished) {
-      return;
-    }
-
-    switch (tick.sessionState) {
-      case NetworkSessionState.pause:
-        NativeLibraryPlayer().stop();
-      case NetworkSessionState.prelude:
-        NativeLibraryPlayer().changePhaseTo(WpPhase.wpPhasePre, at: tick.timeSinceInit);
-        NativeLibraryPlayer().start();
-      case NetworkSessionState.mainPhase:
-        NativeLibraryPlayer().changePhaseTo(WpPhase.wpPhaseSession, at: tick.effectiveTime);
-        NativeLibraryPlayer().start();
-      case NetworkSessionState.postlude:
-        NativeLibraryPlayer().changePhaseTo(WpPhase.wpPhasePost, at: Duration.zero);
-        NativeLibraryPlayer().start();
-      case NetworkSessionState.ended:
-        NativeLibraryPlayer().stop();
-      case NetworkSessionState.planned:
-        // do nothing
-        break;
-      case NetworkSessionState.connectionInterrupted:
-        PlayerService().reportConnectionIssue();
-        NativeLibraryPlayer().stop();
-      case NetworkSessionState.connectionEstablished:
-        PlayerService().reportConnectionRestored();
-    }
+    externalOrchestratorHandlePlayerStateFromTick(tick);
   }
 
   Future<void> _processDisposedEvent() async {

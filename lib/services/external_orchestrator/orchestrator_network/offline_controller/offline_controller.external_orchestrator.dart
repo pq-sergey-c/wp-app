@@ -138,7 +138,6 @@ class ExternalOrchestratorOfflineController implements IExternalOrchestratorCont
         timeUntilStart: Duration.zero,
         effectiveTime: currentPlayedTime,
         absoluteTime: Duration.zero,
-        timeSinceInit: Duration.zero,
         sessionDuration: Duration.zero,
       ),
     );

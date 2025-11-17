@@ -40,18 +40,18 @@ void _usePlayerPageLeavingPageConfirmationPopup(BuildContext context, WidgetRef 
 
   // confirmation popup for go home button
   useEffect(() {
-    StateController<Future<({bool canGoHome})> Function()?>? callbackProviderNotifier;
+    GoHomeCallbackProvider? callbackProviderNotifier;
     bool disposed = false;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       callbackProviderNotifier = ref.read(goHomeCallbackProvider.notifier);
       if (disposed) return;
-      callbackProviderNotifier!.state = () async => (canGoHome: await canClosePageCallback());
+      callbackProviderNotifier!.set(() async => (canGoHome: await canClosePageCallback()));
     });
 
     return () {
       disposed = true;
-      callbackProviderNotifier?.state = null;
+      callbackProviderNotifier?.set(null);
     };
   }, []);
 }

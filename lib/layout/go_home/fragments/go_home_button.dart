@@ -26,7 +26,7 @@ class GoHomeButton extends ConsumerWidget {
       final canGoHomeResult = await canGoHomeCallback();
       if (!canGoHomeResult.canGoHome) return;
 
-      ref.read(goHomeCallbackProvider.notifier).state = null;
+      ref.read(goHomeCallbackProvider.notifier).set(null);
       if (context.mounted) context.go('/');
     }
 
