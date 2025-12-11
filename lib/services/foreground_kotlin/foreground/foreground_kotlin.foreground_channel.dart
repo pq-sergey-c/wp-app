@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:wp_player/services/foreground_kotlin/foreground/foreground_kotlin_isolate.dart';
 
-const String _foregroundDartToKotlinForegroundChannel = 'kotlin_foreground_to_dart_foreground';
+const String _foregroundDartToKotlinForegroundChannel = 'wp_foreground_bridge_foreground';
 const String _noResponse = "";
 
 const BasicMessageChannel<String> _channelToDartMain = BasicMessageChannel<String>(

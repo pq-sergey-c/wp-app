@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.22.1)
 
+if(APPLE)
+project(WpPlayerLib LANGUAGES C OBJC)
+else()
 project(WpPlayerLib LANGUAGES C)
+endif()
 
 # ======================[  ]----------------------
 #                    Make target
@@ -93,10 +97,23 @@ target_include_directories(${PROJECT_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/vendor/miniaudio
 )
 
+if(APPLE)
+target_link_libraries(${PROJECT_NAME}
+    PUBLIC
+    opus
+    opusfile
+    ogg
+)
+else()
 target_link_libraries(${PROJECT_NAME} opus opusfile ogg)
+endif()
 
 if(APPLE)
+    set_source_files_properties(wp_playerlib.c PROPERTIES LANGUAGE OBJC)
     target_link_libraries(${PROJECT_NAME}
+        PUBLIC
+        "-framework Foundation"
+        "-framework CoreFoundation"
         "-framework AVFoundation"
         "-framework AudioToolbox"
     )

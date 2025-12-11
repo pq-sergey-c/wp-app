@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:mutex/mutex.dart';
 import 'package:wp_player/services/external_orchestrator/external_orchestrator.service.interface.dart';
 import 'package:wp_player/services/external_orchestrator/implementations/helpers/handle_player_from_network_tick.external_orchestrator.dart';
 import 'package:wp_player/services/external_orchestrator/types/callbacks.external_orchestrator.dart';
@@ -23,12 +22,9 @@ import 'package:wp_player/services/player/types/sub_types/session_score.player.d
 import 'package:wp_player/utils/logger/logger.dart';
 
 class ExternalOrchestratorRunnerForegroundService implements IExternalOrchestrator {
-  static final Mutex _initMutex = Mutex();
-
-  // ---
-
   final Map<String, dynamic> _startData;
-  bool _initWasAlreadyCalled = false;
+  Future<void>? _startFuture;
+  Completer<void>? _startCompleter;
 
   final CallbackSetBroadcastState _callbackSetBroadcastState;
   final CallbackSetVoiceovers _callbackSetVoiceovers;
@@ -99,10 +95,14 @@ class ExternalOrchestratorRunnerForegroundService implements IExternalOrchestrat
     if (!await ForegroundKotlinService().doesForegroundExist()) return;
     ForegroundKotlinService().setMessageHandler(null);
     await ForegroundKotlinService().dispose();
+    _startFuture = null;
+    _startCompleter = null;
   }
 
   void _processInitializedEvent() {
-    _initMutex.release();
+    if (_startCompleter != null && !_startCompleter!.isCompleted) {
+      _startCompleter!.complete();
+    }
   }
 
   // ----------------------------------------------------------------------------------
@@ -111,10 +111,6 @@ class ExternalOrchestratorRunnerForegroundService implements IExternalOrchestrat
   @override
   Future<void> start() async {
     await _startService();
-
-    // ensure is initialized
-    await _initMutex.acquire();
-    _initMutex.release();
 
     await ForegroundKotlinService().sendMessageJSON(
       serializeEventMethodsForegroundService(ForegroundServiceMethod.start),
@@ -162,14 +158,31 @@ class ExternalOrchestratorRunnerForegroundService implements IExternalOrchestrat
   // Make foreground service - maybe make _initService be called only once
 
   Future<void> _startService() async {
-    if (_initWasAlreadyCalled) return;
-    _initWasAlreadyCalled = true;
+    if (_startFuture != null) {
+      await _startFuture;
+      return;
+    }
 
-    await ForegroundKotlinService().ensureStopped();
-    await ForegroundKotlinService().start();
-    ForegroundKotlinService().setMessageHandler(_onReceiveMessageFromForegroundService);
-    await ForegroundKotlinService().sendMessageJSON(_startData);
-    await _initMutex.acquire(); // released when got initialized callback from foreground service
+    final completer = Completer<void>();
+    _startCompleter = completer;
+
+    Future<void> startFuture() async {
+      try {
+        await ForegroundKotlinService().ensureStopped();
+        await ForegroundKotlinService().start();
+        ForegroundKotlinService().setMessageHandler(_onReceiveMessageFromForegroundService);
+        await ForegroundKotlinService().sendMessageJSON(_startData);
+        await completer.future; // wait for initialized callback
+      } catch (error) {
+        _startFuture = null;
+        _startCompleter = null;
+        rethrow;
+      }
+    }
+
+    final future = startFuture();
+    _startFuture = future;
+    await future;
   }
 
   // ----------------------------------------------------------------------------------

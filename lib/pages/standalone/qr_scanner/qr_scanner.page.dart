@@ -10,6 +10,7 @@ import 'package:wp_player/hooks/core/router/use_on_page_pop.dart';
 import 'package:wp_player/providers/popup/popup.provider.dart';
 import 'package:wp_player/providers/popup/types/popup_content.dart';
 import 'package:wp_player/providers/responsive_layout/responsive_layout.provider.dart';
+import 'package:wp_player/providers/theme_mode/theme_mode.provider.dart';
 import 'package:wp_player/styles/colors/colors.dart';
 
 /// Implies use of Imperative navigation and getting result from context.pop
@@ -19,12 +20,20 @@ class QrScannerPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final layout = ref.watch(responsiveLayoutProvider);
+    final themeMode = ref.watch(themeModeProvider);
     final popup = ref.watch(popupProvider.notifier);
 
     final squareSide = min(layout.screenHeight, layout.screenWidth) * 0.6;
     final ticker = useSingleTickerProvider();
-    final animationController = useAnimationController(vsync: ticker, duration: const Duration(seconds: 2))
-      ..repeat(reverse: true);
+    final animationController = useAnimationController(
+      vsync: ticker,
+      duration: const Duration(seconds: 2),
+    );
+
+    useEffect(() {
+      unawaited(animationController.repeat(reverse: true));
+      return animationController.stop;
+    }, [animationController]);
 
     // used due several firing of onDetect
     final isDetected = useRef<bool>(false);
@@ -51,7 +60,10 @@ class QrScannerPage extends HookConsumerWidget {
           errorBuilder: (_, exception) {
             WidgetsBinding.instance.addPostFrameCallback(
               (_) => unawaited(() async {
-                if (exception.errorCode != MobileScannerErrorCode.permissionDenied) return;
+                if (exception.errorCode !=
+                    MobileScannerErrorCode.permissionDenied) {
+                  return;
+                }
                 if (isEncounteredPermissionError.value) return;
                 isEncounteredPermissionError.value = true;
 
@@ -72,17 +84,68 @@ class QrScannerPage extends HookConsumerWidget {
             return const SizedBox.shrink();
           },
         ),
+        Positioned(
+          left: layout.selectByScreenType(mobile: -5, orElse: 0),
+          top: layout.selectByScreenType(
+            mobile: layout.getHeightWithTopPadding(24),
+            orElse: layout.getClampedHeight(
+              percent: 5,
+              min: 15,
+              withTopPadding: true,
+            ),
+          ),
+          child: Material(
+            color: AppColors.transparent,
+            child: InkWell(
+              onTap: () {
+                if (!context.canPop()) return;
+
+                isDetected.value =
+                    true; // prevent scan callback after manual exit
+                context.pop();
+              },
+              borderRadius: const BorderRadius.horizontal(
+                right: Radius.circular(32),
+              ),
+              child: Container(
+                width: layout.getClampedWidth(percent: 5, min: 56),
+                height: layout.getClampedHeight(percent: 7, min: 50),
+                decoration: BoxDecoration(
+                  color: themeMode.themeConfig.primary,
+                  borderRadius: const BorderRadius.horizontal(
+                    right: Radius.circular(32),
+                  ),
+                ),
+                padding: const EdgeInsets.only(
+                  left: 12,
+                  top: 12,
+                  right: 14,
+                  bottom: 12,
+                ),
+                child: Center(
+                  child: Icon(
+                    Icons.close,
+                    color: themeMode.themeConfig.onPrimary,
+                    size: layout.getClampedHeight(percent: 3, min: 25),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
 
         _pseudoScanningSquare(squareSide, animationController),
       ],
     );
   }
 
-  Center _pseudoScanningSquare(double squareSide, AnimationController animationController) {
-    final animation = Tween<double>(
-      begin: -0.8,
-      end: 0.8,
-    ).animate(CurvedAnimation(parent: animationController, curve: Curves.linear));
+  Center _pseudoScanningSquare(
+    double squareSide,
+    AnimationController animationController,
+  ) {
+    final animation = Tween<double>(begin: -0.8, end: 0.8).animate(
+      CurvedAnimation(parent: animationController, curve: Curves.linear),
+    );
 
     const borderConfig = BorderSide(color: AppColors.white, width: 4);
 
@@ -97,7 +160,11 @@ class QrScannerPage extends HookConsumerWidget {
               builder: (_, _) {
                 return Align(
                   alignment: Alignment(0, animation.value),
-                  child: Container(height: 2, width: squareSide * 0.7, color: AppColors.cyanElectric),
+                  child: Container(
+                    height: 2,
+                    width: squareSide * 0.7,
+                    color: AppColors.cyanElectric,
+                  ),
                 );
               },
             ),
@@ -109,7 +176,9 @@ class QrScannerPage extends HookConsumerWidget {
                 height: squareSide / 4,
                 decoration: const BoxDecoration(
                   border: Border(top: borderConfig, right: borderConfig),
-                  borderRadius: BorderRadius.only(topRight: Radius.circular(24)),
+                  borderRadius: BorderRadius.only(
+                    topRight: Radius.circular(24),
+                  ),
                 ),
               ),
             ),
@@ -121,7 +190,9 @@ class QrScannerPage extends HookConsumerWidget {
                 height: squareSide / 4,
                 decoration: const BoxDecoration(
                   border: Border(bottom: borderConfig, right: borderConfig),
-                  borderRadius: BorderRadius.only(bottomRight: Radius.circular(24)),
+                  borderRadius: BorderRadius.only(
+                    bottomRight: Radius.circular(24),
+                  ),
                 ),
               ),
             ),
@@ -133,7 +204,9 @@ class QrScannerPage extends HookConsumerWidget {
                 height: squareSide / 4,
                 decoration: const BoxDecoration(
                   border: Border(bottom: borderConfig, left: borderConfig),
-                  borderRadius: BorderRadius.only(bottomLeft: Radius.circular(24)),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(24),
+                  ),
                 ),
               ),
             ),

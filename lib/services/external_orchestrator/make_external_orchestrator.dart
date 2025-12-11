@@ -23,7 +23,7 @@ Future<IExternalOrchestrator> makeOnlineExternalOrchestrator({
   required String artist,
   required String sessionName,
 }) async {
-  if (Platform.isWindows) {
+  if (!Platform.isAndroid && !Platform.isIOS) {
     return ExternalOrchestratorRunnerMainIsolate.online(
       callbackSetBroadcastState: callbackSetBroadcastState,
       callbackSetVoiceovers: callbackSetVoiceovers,
@@ -35,20 +35,22 @@ Future<IExternalOrchestrator> makeOnlineExternalOrchestrator({
     );
   }
 
-  final bool hasNotificationPermission =
-      await RequestNotificationPermissions.isGrantedPermissionsToStartForegroundService();
+  if (Platform.isAndroid) {
+    final bool hasNotificationPermission =
+        await RequestNotificationPermissions.isGrantedPermissionsToStartForegroundService();
 
-  if (!hasNotificationPermission) {
-    logConsole.i("Notification permission denied for orchestrator. Falling back to main isolate version");
-    return ExternalOrchestratorRunnerMainIsolate.online(
-      callbackSetBroadcastState: callbackSetBroadcastState,
-      callbackSetVoiceovers: callbackSetVoiceovers,
-      callbackSetSessionDuration: callbackSetSessionDuration,
-      callbackSetPlaybackTime: callbackSetPlaybackTime,
-      environment: environment,
-      broadcastId: broadcastId,
-      sessionId: sessionId,
-    );
+    if (!hasNotificationPermission) {
+      logConsole.i("Notification permission denied for orchestrator. Falling back to main isolate version");
+      return ExternalOrchestratorRunnerMainIsolate.online(
+        callbackSetBroadcastState: callbackSetBroadcastState,
+        callbackSetVoiceovers: callbackSetVoiceovers,
+        callbackSetSessionDuration: callbackSetSessionDuration,
+        callbackSetPlaybackTime: callbackSetPlaybackTime,
+        environment: environment,
+        broadcastId: broadcastId,
+        sessionId: sessionId,
+      );
+    }
   }
 
   return ExternalOrchestratorRunnerForegroundService.online(
@@ -76,7 +78,7 @@ Future<IExternalOrchestrator> makeOfflineExternalOrchestrator({
   required String artist,
   required String sessionName,
 }) async {
-  if (Platform.isWindows) {
+  if (!Platform.isAndroid && !Platform.isIOS) {
     return ExternalOrchestratorRunnerMainIsolate.offline(
       callbackSetBroadcastState: callbackSetBroadcastState,
       callbackSetSessionDuration: callbackSetSessionDuration,
@@ -87,19 +89,21 @@ Future<IExternalOrchestrator> makeOfflineExternalOrchestrator({
     );
   }
 
-  final bool hasNotificationPermission =
-      await RequestNotificationPermissions.isGrantedPermissionsToStartForegroundService();
+  if (Platform.isAndroid) {
+    final bool hasNotificationPermission =
+        await RequestNotificationPermissions.isGrantedPermissionsToStartForegroundService();
 
-  if (!hasNotificationPermission) {
-    logConsole.i("Notification permission denied for orchestrator. Falling back to main isolate version");
-    return ExternalOrchestratorRunnerMainIsolate.offline(
-      callbackSetBroadcastState: callbackSetBroadcastState,
-      callbackSetSessionDuration: callbackSetSessionDuration,
-      callbackSetPlaybackTime: callbackSetPlaybackTime,
-      sessionId: sessionId,
-      broadcastState: broadcastState,
-      sessionDuration: sessionDuration,
-    );
+    if (!hasNotificationPermission) {
+      logConsole.i("Notification permission denied for orchestrator. Falling back to main isolate version");
+      return ExternalOrchestratorRunnerMainIsolate.offline(
+        callbackSetBroadcastState: callbackSetBroadcastState,
+        callbackSetSessionDuration: callbackSetSessionDuration,
+        callbackSetPlaybackTime: callbackSetPlaybackTime,
+        sessionId: sessionId,
+        broadcastState: broadcastState,
+        sessionDuration: sessionDuration,
+      );
+    }
   }
 
   return ExternalOrchestratorRunnerForegroundService.offline(

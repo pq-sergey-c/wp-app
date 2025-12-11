@@ -1,7 +1,15 @@
-# code editors
-.vscode
-.idea
-.build
+### Jetbrains ###
+.idea/
+.build/
+*.iws
+*.iml
+*.ipr
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
 
 # flutter produced
 .flutter-plugins-dependencies

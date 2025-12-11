@@ -6,10 +6,24 @@ import 'package:wp_player/types/font_variation/font_variation_weight.dart';
 
 // Note: using ConsumerStatefulWidget instead of HookConsumerWidget due to optional external inputController
 class TextInput extends ConsumerStatefulWidget {
-  const TextInput({required this.labelText, this.inputController, super.key});
+  const TextInput({
+    required this.labelText,
+    this.inputController,
+    this.onSubmitted,
+    this.focusNode,
+    this.textInputAction = TextInputAction.done,
+    this.onTapOutside,
+    this.trailingActions = const <Widget>[],
+    super.key,
+  });
 
   final TextEditingController? inputController;
   final String labelText;
+  final ValueChanged<String>? onSubmitted;
+  final FocusNode? focusNode;
+  final TextInputAction textInputAction;
+  final ValueChanged<PointerDownEvent>? onTapOutside;
+  final List<Widget> trailingActions;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _TextInput();
@@ -39,7 +53,9 @@ class _TextInput extends ConsumerState<TextInput> {
 
   void _inputControllerListener() {
     final hasTextListenerValue = inputController.text.isNotEmpty;
-    if (hasTextListenerValue != hasText) setState(() => hasText = hasTextListenerValue);
+    if (hasTextListenerValue != hasText) {
+      setState(() => hasText = hasTextListenerValue);
+    }
   }
 
   @override
@@ -50,12 +66,36 @@ class _TextInput extends ConsumerState<TextInput> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final verticalPadding = (constraints.maxHeight - textHeight * 1.5) / 2;
+        final suffixChildren =
+            hasText
+                ? [
+                  IconButton(
+                    icon: const Icon(Icons.clear),
+                    onPressed: () {
+                      inputController.clear();
+                    },
+                    splashColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                    hoverColor: Colors.transparent,
+                    iconSize: 24,
+                  ),
+                ]
+                : widget.trailingActions;
 
         return TextField(
           controller: inputController,
+          focusNode: widget.focusNode,
+          textInputAction: widget.textInputAction,
+          onSubmitted: widget.onSubmitted,
+          onTapOutside: widget.onTapOutside,
           decoration: InputDecoration(
-            contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: verticalPadding),
-            border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(16))),
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: verticalPadding,
+            ),
+            border: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+            ),
             labelText: widget.labelText,
             labelStyle: TextStyle(
               fontVariations: [FontVariationWeight.w400()],
@@ -63,22 +103,24 @@ class _TextInput extends ConsumerState<TextInput> {
               fontSize: textHeight,
             ),
             suffixIcon:
-                hasText
-                    ? Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
-                      child: IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          inputController.clear();
-                        },
-                        splashColor: Colors.transparent,
-                        highlightColor: Colors.transparent,
-                        hoverColor: Colors.transparent,
+                suffixChildren.isEmpty
+                    ? null
+                    : Padding(
+                      padding: const EdgeInsets.only(right: 12),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: suffixChildren,
                       ),
-                    )
-                    : null,
+                    ),
+            suffixIconConstraints: const BoxConstraints(
+              minHeight: 0,
+              minWidth: 0,
+            ),
           ),
-          style: TextStyle(fontVariations: [FontVariationWeight.w500()], fontSize: textHeight),
+          style: TextStyle(
+            fontVariations: [FontVariationWeight.w500()],
+            fontSize: textHeight,
+          ),
         );
       },
     );

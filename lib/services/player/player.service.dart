@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:wp_player/core/permissions/request_notification_permissions.dart';
+import 'package:wp_player/services/device_info/device_info.service.dart';
 import 'package:wp_player/services/external_orchestrator/external_orchestrator.service.interface.dart';
 import 'package:wp_player/services/external_orchestrator/make_external_orchestrator.dart';
 import 'package:wp_player/services/player.native_lib/player.native_lib.dart';
@@ -19,6 +20,7 @@ import 'package:wp_player/utils/async/poller/async_notifier_poller.dart';
 import 'package:wp_player/utils/logger/logger.dart';
 
 const _fakeArtist = "Dr. Henry";
+const _providerDeviceName = "Desktop";
 
 /// Singleton
 class PlayerService implements IPlayerService {
@@ -43,6 +45,8 @@ class PlayerService implements IPlayerService {
     _playbackDurationNotifier = null;
     _isConnectionInterruptedNotifier?.dispose();
     _isConnectionInterruptedNotifier = null;
+    _sessionEndedNotifier?.dispose();
+    _sessionEndedNotifier = null;
     _bufferedTimeNotifierPoller?.dispose();
     _bufferedTimeNotifierPoller = null;
 
@@ -60,6 +64,7 @@ class PlayerService implements IPlayerService {
   Session? _session;
   LinkSessionInfo? _linkSessionInfo;
   IExternalOrchestrator? _orchestrator;
+  String _listenerDeviceName = "Unknown Device";
 
   // Updated data from external orchestrator
   List<VoiceoverStage>? _latestVoiceovers;
@@ -67,10 +72,13 @@ class PlayerService implements IPlayerService {
   ValueNotifier<Duration?>? _currentPlayTimeNotifier;
   ValueNotifier<Duration?>? _playbackDurationNotifier;
   ValueNotifier<bool>? _isConnectionInterruptedNotifier; // websocket connection
+  ValueNotifier<bool>? _sessionEndedNotifier;
 
   // Data from native player
   AsyncNotifierPoller<Duration>? _bufferedTimeNotifierPoller;
-  static const Duration _bufferedTimePollingInterval = Duration(milliseconds: 490);
+  static const Duration _bufferedTimePollingInterval = Duration(
+    milliseconds: 490,
+  );
 
   static const int bufferingLookaheadOffline = 10 * 60 * 60;
   static const int bufferingLookaheadOnline = 20 * 60;
@@ -128,13 +136,19 @@ class PlayerService implements IPlayerService {
   Duration get timeInPhase => NativeLibraryPlayer().timeInPhase;
 
   @override
-  ValueListenable<bool>? get isPlayingListenable => NativeLibraryPlayer().isPlayingState;
+  ValueListenable<bool>? get isPlayingListenable =>
+      NativeLibraryPlayer().isPlayingState;
 
   @override
-  ValueListenable<Duration?>? get currentPlayTimeListenable => _currentPlayTimeNotifier;
+  ValueListenable<Duration?>? get currentPlayTimeListenable =>
+      _currentPlayTimeNotifier;
 
   @override
-  ValueListenable<Duration?>? get playbackDurationListenable => _playbackDurationNotifier;
+  ValueListenable<Duration?>? get playbackDurationListenable =>
+      _playbackDurationNotifier;
+
+  @override
+  ValueListenable<bool>? get sessionEndedListenable => _sessionEndedNotifier;
 
   @override
   SessionInfo get sessionInformation {
@@ -144,58 +158,93 @@ class PlayerService implements IPlayerService {
       id: _session!.id,
       title: _session!.sessionName,
       sessionType: _session!.renderType,
-      artist: _session!.providerName.isNotEmpty ? _session!.providerName : _fakeArtist,
-      deviceInfo: "Desktop → Mobile",
-      imageUrl: _session!.providerImageUrl.isNotEmpty ? _session!.providerImageUrl : "",
+      artist:
+          _session!.providerName.isNotEmpty
+              ? _session!.providerName
+              : _fakeArtist,
+      deviceInfo: "$_providerDeviceName → $_listenerDeviceName",
+      imageUrl:
+          _session!.providerImageUrl.isNotEmpty
+              ? _session!.providerImageUrl
+              : "",
       atmosphereColors: _session!.score.atmosphereColors,
       emotionalIntensity: _session!.score.emotionalIntensity,
       userRole: _userRole,
-      providerControlUri: _session!.getProviderControlUri(_userRole, _linkSessionInfo!.externalOrchestratorEnv),
+      providerControlUri: _session!.getProviderControlUri(
+        _userRole,
+        _linkSessionInfo!.externalOrchestratorEnv,
+      ),
     );
   }
 
   @override
   bool get canControlPlayback {
     _assertSessionAndSessionInfoExist();
-    return isOffline || _session!.canClientStartEarly || (!isOffline && _userRole == UserRole.provider);
+    return isOffline ||
+        _session!.canClientStartEarly ||
+        (!isOffline && _userRole == UserRole.provider);
   }
 
   @override
-  void reportConnectionIssue() => _isConnectionInterruptedNotifier?.value = true;
+  void reportConnectionIssue() =>
+      _isConnectionInterruptedNotifier?.value = true;
 
   @override
-  void reportConnectionRestored() => _isConnectionInterruptedNotifier?.value = false;
+  void reportConnectionRestored() =>
+      _isConnectionInterruptedNotifier?.value = false;
 
   @override
-  ValueListenable<bool>? get isConnectionInterruptedListenable => _isConnectionInterruptedNotifier;
+  void reportSessionEnded() {
+    if (_sessionEndedNotifier == null || _sessionEndedNotifier!.value) return;
+    _sessionEndedNotifier!.value = true;
+  }
+
+  @override
+  ValueListenable<bool>? get isConnectionInterruptedListenable =>
+      _isConnectionInterruptedNotifier;
 
   @override
   bool get isOffline {
     _assertSessionAndSessionInfoExist();
-    return _session!.renderType == SessionRenderType.preRendered || _session!.endTime != null;
+    return _session!.renderType == SessionRenderType.preRendered ||
+        _session!.endTime != null;
   }
 
   @override
-  ValueListenable<Duration?>? get bufferedTimeListenable => _bufferedTimeNotifierPoller?.listenable;
+  ValueListenable<Duration?>? get bufferedTimeListenable =>
+      _bufferedTimeNotifierPoller?.listenable;
 
   // -----------------------------------------------------------
 
-  Future<void> _startSession(LinkSessionInfo linkSessionInfo, Session session) async {
+  Future<void> _startSession(
+    LinkSessionInfo linkSessionInfo,
+    Session session,
+  ) async {
     await disconnect();
 
     _session = session;
     _linkSessionInfo = linkSessionInfo;
+
+    _listenerDeviceName = await DeviceInfoService().deviceName();
 
     _latestVoiceovers = session.score.voiceovers;
 
     _currentPlayTimeNotifier = ValueNotifier(null);
     _playbackDurationNotifier = ValueNotifier(null);
     _isConnectionInterruptedNotifier = ValueNotifier(false);
+    _sessionEndedNotifier = ValueNotifier(false);
 
-    NativeLibraryPlayer.rebuild(bufferingLookahead: isOffline ? bufferingLookaheadOffline : bufferingLookaheadOnline);
+    NativeLibraryPlayer.rebuild(
+      bufferingLookahead:
+          isOffline ? bufferingLookaheadOffline : bufferingLookaheadOnline,
+    );
 
     _bufferedTimeNotifierPoller = AsyncNotifierPoller(
-      getValueFunction: () => !NativeLibraryPlayer.isPlayerExist() ? null : NativeLibraryPlayer().bufferedTime,
+      getValueFunction:
+          () =>
+              !NativeLibraryPlayer.isPlayerExist()
+                  ? null
+                  : NativeLibraryPlayer().bufferedTime,
       interval: _bufferedTimePollingInterval,
       name: 'Buffered time (poller of native player value)',
     )..start();
@@ -207,7 +256,9 @@ class PlayerService implements IPlayerService {
     _updateStreams();
   }
 
-  Future<IExternalOrchestrator> _makeExternalOrchestrator({required bool isOffline}) async {
+  Future<IExternalOrchestrator> _makeExternalOrchestrator({
+    required bool isOffline,
+  }) async {
     _assertSessionAndSessionInfoExist();
 
     if (isOffline) {
@@ -219,7 +270,10 @@ class PlayerService implements IPlayerService {
         broadcastState: _session!.broadcastState,
         sessionDuration: _session!.duration,
         sessionScore: _session!.score,
-        artist: _session!.providerName.isNotEmpty ? _session!.providerName : _fakeArtist,
+        artist:
+            _session!.providerName.isNotEmpty
+                ? _session!.providerName
+                : _fakeArtist,
         sessionName: _session!.sessionName,
       );
     }
@@ -233,7 +287,10 @@ class PlayerService implements IPlayerService {
       broadcastId: _linkSessionInfo!.broadcastId,
       sessionId: _session!.id,
       sessionScore: _session!.score,
-      artist: _session!.providerName.isNotEmpty ? _session!.providerName : _fakeArtist,
+      artist:
+          _session!.providerName.isNotEmpty
+              ? _session!.providerName
+              : _fakeArtist,
       sessionName: _session!.sessionName,
     );
   }
@@ -283,7 +340,9 @@ class PlayerService implements IPlayerService {
 
   void _assertSessionAndSessionInfoExist() {
     if (_session == null || _linkSessionInfo == null) {
-      throw StateError("Player state invalid: session and sessionInfo must not be null");
+      throw StateError(
+        "Player state invalid: session and sessionInfo must not be null",
+      );
     }
   }
 
@@ -295,7 +354,9 @@ class PlayerService implements IPlayerService {
 
   void _assertPlayingStateNotifiersExist() {
     if (!_isPlayingStateNotifiersExist()) {
-      throw StateError("Player state invalid: player state notifiers must not be null");
+      throw StateError(
+        "Player state invalid: player state notifiers must not be null",
+      );
     }
   }
 

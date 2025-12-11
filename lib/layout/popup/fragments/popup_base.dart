@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:wp_player/core/ux/page_scroll_behavior.dart';
 import 'package:wp_player/layout/popup/types/base_popup_content.dart';
 import 'package:wp_player/providers/responsive_layout/fragments/responsive_layout_model.dart';
@@ -10,7 +11,7 @@ import 'package:wp_player/providers/theme_mode/types/theme_mode.state.dart';
 import 'package:wp_player/styles/colors/colors.dart';
 import 'package:wp_player/types/font_variation/font_variation_weight.dart';
 
-class PopupBase extends ConsumerWidget {
+class PopupBase extends HookConsumerWidget {
   const PopupBase({required this.content, required this.action, super.key, this.withBackgroundOverlay = true});
 
   final bool withBackgroundOverlay;
@@ -21,8 +22,9 @@ class PopupBase extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final layout = ref.watch(responsiveLayoutProvider);
     final themeMode = ref.watch(themeModeProvider);
+    final messageScrollController = useScrollController();
 
-    final List<Widget> popupMainContent = _getContent(themeMode, layout);
+    final List<Widget> popupMainContent = _getContent(themeMode, layout, messageScrollController);
 
     return Stack(
       children: [
@@ -67,10 +69,14 @@ class PopupBase extends ConsumerWidget {
     );
   }
 
-  List<Widget> _getContent(ThemeModeState themeMode, ResponsiveLayout layout) {
+  List<Widget> _getContent(
+    ThemeModeState themeMode,
+    ResponsiveLayout layout,
+    ScrollController messageScrollController,
+  ) {
     switch (content) {
       case final BasePopupTextContent content:
-        return _textContent(themeMode, layout, content);
+        return _textContent(themeMode, layout, content, messageScrollController);
       case final BasePopupWidgetContent content:
         return [content.content.widget];
     }
@@ -80,6 +86,7 @@ class PopupBase extends ConsumerWidget {
     ThemeModeState themeMode,
     ResponsiveLayout layout,
     BasePopupTextContent popupContent,
+    ScrollController messageScrollController,
   ) {
     final children = [
       // Title
@@ -109,8 +116,11 @@ class PopupBase extends ConsumerWidget {
         child: ScrollConfiguration(
           behavior: pageScrollBehaviorWithScrollBar,
           child: Scrollbar(
+            controller: messageScrollController,
             thumbVisibility: true,
             child: SingleChildScrollView(
+              controller: messageScrollController,
+              primary: false,
               child: Text.rich(
                 style: TextStyle(
                   decoration: TextDecoration.none,

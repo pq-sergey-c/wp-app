@@ -28,6 +28,11 @@ void externalOrchestratorHandlePlayerStateFromTick(final NetworkTick tick) {
         NativeLibraryPlayer().changePhaseTo(WpPhase.wpPhasePost, at: Duration.zero);
       }
       NativeLibraryPlayer().start();
+
+      // TODO: resolve do we need to play postlude or to close player
+      if (tick.sessionState == NetworkSessionState.ended) {
+        PlayerService().reportSessionEnded();
+      }
     case NetworkSessionState.planned:
       // do nothing
       break;

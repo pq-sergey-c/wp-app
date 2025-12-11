@@ -25,10 +25,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private const val MainDartToKotlinForegroundChannel: String =
-        "kotlin_foreground_to_dart_main_isolate"
+    "wp_foreground_bridge_main_isolate"
 
 private const val MainDartToForegroundControlsChannel: String =
-        "kotlin_foreground_to_dart_main_control_channel"
+    "wp_foreground_bridge_control"
 private const val NoResponse: String = ""
 private const val Error: String = "ERROR"
 private const val TAG = "MainDartToForegroundKotlinChannel"

@@ -4,7 +4,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:wp_player/components/containers/scrollable_page_shell.dart';
-import 'package:wp_player/core/qr_scanner/qr_scanner.service.dart';
 import 'package:wp_player/pages/connect_page/fragments/connect_page_content.dart';
 import 'package:wp_player/pages/connect_page/types/connect_page_show_popup.dart';
 import 'package:wp_player/providers/popup/popup.provider.dart';
@@ -20,21 +19,25 @@ class ConnectPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    PlayerService().streamingType = userRole; // TODO: remove once been obtained from link/QR
+    PlayerService().streamingType =
+        userRole; // TODO: remove once been obtained from link/QR
 
     final layout = ref.watch(responsiveLayoutProvider);
     final popup = ref.watch(popupProvider.notifier);
 
-    final isScanner = isQRScannerSupportedOnPlatform();
-
     // Popups
     ConnectPageCloseLoadingPopupCallback showLoadingPopup() {
+      FocusScope.of(context).unfocus();
       return popup.addPopupLoading(
-        content: PopupContent.text(title: "Please wait", message: const TextSpan(text: "Connecting to the server...")),
+        content: PopupContent.text(
+          title: "Please wait",
+          message: const TextSpan(text: "Connecting to the server..."),
+        ),
       );
     }
 
     Future<void> showFailPopup({required String correctnessOf}) {
+      FocusScope.of(context).unfocus();
       return popup.addPopupNotification(
         content: PopupContent.text(
           title: "Failed to connect to server",
@@ -62,13 +65,17 @@ class ConnectPage extends HookConsumerWidget {
           left: layout.getClampedWidth(percent: 8, max: 50),
           right: layout.getClampedWidth(percent: 8, max: 50),
           top: topPadding,
-          bottom: bottomPadding,
+          bottom: bottomPadding + layout.paddingBottom,
         ),
         child: SizedBox(
           width: layout.screenWidth,
           height: max(
-            layout.screenHeight - layout.paddingTop - topPadding - bottomPadding,
-            690 + (isScanner ? 0 : 60) + (userRole == UserRole.provider ? 60 : 0),
+            layout.screenHeight -
+                layout.paddingTop -
+                layout.paddingBottom -
+                topPadding -
+                bottomPadding,
+            710 + (userRole == UserRole.provider ? 65 : 0),
           ),
           child: ConnectPageContent(
             showLoadingPopup: showLoadingPopup,

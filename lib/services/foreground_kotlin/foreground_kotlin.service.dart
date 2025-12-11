@@ -5,8 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:mutex/mutex.dart';
 import 'package:wp_player/services/foreground_kotlin/foreground_kotlin.service.interface.dart';
 
-const String _mainDartToKotlinForegroundChannel = 'kotlin_foreground_to_dart_main_isolate';
-const String _mainDartToKotlinControlChannel = 'kotlin_foreground_to_dart_main_control_channel';
+const String _mainDartToKotlinForegroundChannel = 'wp_foreground_bridge_main_isolate';
+const String _mainDartToKotlinControlChannel = 'wp_foreground_bridge_control';
 const String _noResponse = "";
 
 const String _controlMessageStart = "startForeground";

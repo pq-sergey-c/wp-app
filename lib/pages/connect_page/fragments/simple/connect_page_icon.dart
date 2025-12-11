@@ -4,7 +4,11 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:wp_player/styles/colors/colors.dart';
 
 class ConnectPageIcon extends ConsumerWidget {
-  const ConnectPageIcon({required this.iconPath, required this.isSmallVariant, super.key});
+  const ConnectPageIcon({
+    required this.iconPath,
+    required this.isSmallVariant,
+    super.key,
+  });
 
   final String iconPath;
   final bool isSmallVariant;
@@ -21,13 +25,19 @@ class ConnectPageIcon extends ConsumerWidget {
     return Container(
       width: 60,
       height: 60,
-      decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadiusGeometry.circular(16)),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadiusGeometry.circular(16),
+      ),
       child: Align(
         child: SvgPicture.asset(
           width: 25,
           height: 25,
           iconPath,
-          colorFilter: const ColorFilter.mode(AppColors.blueIron, BlendMode.srcIn),
+          colorFilter: const ColorFilter.mode(
+            AppColors.blueIron,
+            BlendMode.srcIn,
+          ),
         ),
       ),
     );

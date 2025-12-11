@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:wp_player/providers/popup/types/popup_content.dart';
@@ -20,6 +22,9 @@ class RequestNotificationPermissions {
   /// On older OS will show popup only if user manually disabled notifications,
   /// and will prompt user (if agreed) to open settings and change permissions
   static Future<bool> requestPermissionsToStartForegroundService() async {
+    if(Platform.isMacOS) {
+        return true;
+    }
     final PermissionStatus notificationPermissions = await Permission.notification.status;
     if (notificationPermissions.isGranted) return true;
 

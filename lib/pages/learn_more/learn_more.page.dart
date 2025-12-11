@@ -27,11 +27,11 @@ class LearnMorePage extends ConsumerWidget {
           top: topPadding,
           left: horizontalPadding,
           right: horizontalPadding,
-          bottom: bottomPadding,
+          bottom: bottomPadding + layout.paddingBottom,
         ),
         child: SizedBox(
           width: layout.screenWidth,
-          height: max(layout.screenHeight - topPadding - layout.paddingTop - bottomPadding, 700),
+          height: max(layout.screenHeight - topPadding - layout.paddingTop - layout.paddingBottom - bottomPadding, 700),
           child: const LearnMoreContent(),
         ),
       ),

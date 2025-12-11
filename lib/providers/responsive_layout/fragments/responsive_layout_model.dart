@@ -5,13 +5,15 @@ class ResponsiveLayout {
   final double screenWidth;
   final double screenHeight;
   final double paddingTop;
+  final double paddingBottom;
 
   final double baseFontSize;
 
   ResponsiveLayout(MediaQueryData mediaData, this.baseFontSize)
     : screenWidth = mediaData.size.width,
       screenHeight = mediaData.size.height,
-      paddingTop = mediaData.padding.top;
+      paddingTop = mediaData.padding.top,
+      paddingBottom = mediaData.padding.bottom;
 
   // --------------------------------------------------------------------------
 

@@ -18,3 +18,7 @@ Note that:
 
 To setup Windows read [windows_setup.md](doc/setup/windows.md)
 To build and make installer for Windows read [windows_build.md](doc/building/windows.md)
+
+# IOS
+
+To setup read [ios_setup.md](doc/setup/ios.md)

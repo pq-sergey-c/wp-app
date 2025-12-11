@@ -63,13 +63,13 @@ class SelectRolePage extends ConsumerWidget {
       child: Padding(
         padding: EdgeInsets.only(
           top: topPadding,
-          bottom: bottomPadding,
+          bottom: bottomPadding + layout.paddingBottom,
           left: horizontalPadding,
           right: horizontalPadding,
         ),
         child: SizedBox(
           width: layout.screenWidth,
-          height: max(layout.screenHeight - topPadding - bottomPadding - layout.paddingTop, 550),
+          height: max(layout.screenHeight - topPadding - bottomPadding - layout.paddingBottom - layout.paddingTop, 550),
           child: const SelectRoleContent(),
         ),
       ),

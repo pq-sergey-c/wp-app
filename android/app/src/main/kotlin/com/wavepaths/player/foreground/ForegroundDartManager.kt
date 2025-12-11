@@ -18,7 +18,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
-private const val ForegroundToForegroundChannel: String = "kotlin_foreground_to_dart_foreground"
+private const val ForegroundToForegroundChannel: String = "wp_foreground_bridge_foreground"
 
 private const val NoResponse: String = ""
 private const val Error: String = "ERROR"
