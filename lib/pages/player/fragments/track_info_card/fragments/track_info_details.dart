@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:wp_player/components/initials_avatar/initials_avatar.dart';
 import 'package:wp_player/providers/responsive_layout/responsive_layout.provider.dart';
 import 'package:wp_player/providers/responsive_layout/types/enums/responsive_layout_text_sizes.dart';
 import 'package:wp_player/providers/theme_mode/theme_mode.provider.dart';
@@ -64,13 +65,9 @@ class TrackInfoDetails extends ConsumerWidget {
                             sessionInfo.imageUrl, 
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) {
-                              return ColoredBox(
-                                color: AppColors.greyFog,
-                                child: Icon(
-                                  Icons.music_note, 
-                                  size: 24, 
-                                  color: themeMode.themeConfig.primary
-                                ),
+                              return InitialsAvatar(
+                                name: sessionInfo.artist,
+                                size: 54,
                               );
                             },
                             loadingBuilder: (context, child, loadingProgress) {
@@ -88,9 +85,9 @@ class TrackInfoDetails extends ConsumerWidget {
                               );
                             },
                           )
-                        : ColoredBox(
-                            color: AppColors.greyFog,
-                            child: Icon(Icons.music_note, size: 24, color: themeMode.themeConfig.primary),
+                        : InitialsAvatar(
+                            name: sessionInfo.artist,
+                            size: 54,
                           ),
               ),
             ),

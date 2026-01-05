@@ -5,7 +5,7 @@ publish_to: "none" # Don't remove this line
 
 # Update both versionName (seen by user) and versionCode on new version
 # version: major.minor.patch+yyyymmddaa - where aa is two numbered version on this date
-version: 3.0.0+2025111701
+version: 3.0.2+2025121201
 
 environment:
   sdk: ^3.7.0
@@ -50,6 +50,10 @@ flutter_launcher_icons:
   # ios: true # Uncomment this line if you want to generate iOS icons
   windows:
     generate: false # another one is used
+  macos:
+    generate: true
+    image_path: "assets/icons/icon_macos.png"
+
 
 flutter:
   uses-material-design: true

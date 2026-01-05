@@ -56,8 +56,8 @@ const Map<SessionRenderType, Map<UserRole, String>> _sessionTypeAndUserRoleToDes
         "The music of this session is created by your provider either for playback-only use (Pre-recorded)",
   },
   SessionRenderType.predictiveComposed: {
-    UserRole.listener: "The music of this session is created by your provider in real-time (Live)",
-    UserRole.provider: "The music of this session is created by your provider in real-time (Live)",
+    UserRole.listener: "The music of this session is streaming in real-time (Live)",
+    UserRole.provider: "The music of this session is streaming in real-time (Live)",
   },
   SessionRenderType.realTime: {
     UserRole.listener: "The music of this session is created by your provider in real-time (Real time)",

@@ -4,9 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wp_player/services/player/player.service.dart';
 import 'package:wp_player/utils/data_parse/http_link_parsing/check_translate_http_link_to_player_link.dart';
+import 'package:wp_player/utils/platform/is_desktop.dart';
 
 bool isQRScannerSupportedOnPlatform() {
-  return Platform.isAndroid || Platform.isIOS;
+  return !isDesktopPlatform();
 }
 
 enum ScanQrStatus { cancelled, failed, success }

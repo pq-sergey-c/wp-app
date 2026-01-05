@@ -39,9 +39,17 @@ class TempStorageService implements ITempStorageService {
   factory TempStorageService.deserializeForIsolate(String data) {
     final tempDir = Directory(data);
     if (!tempDir.existsSync()) {
-      throw StateError(
-        "[TempStorageService]: Incoherent state - deserialize failed cause directory wasn't made / or already deleted",
-      );
+      // Try to recreate the directory in case it was deleted or not yet created
+      try {
+        tempDir.createSync(recursive: true);
+        logConsole.w(
+          "[TempStorageService]: Directory didn't exist during deserialize, created it: ${tempDir.path}",
+        );
+      } catch (e) {
+        throw StateError(
+          "[TempStorageService]: Failed to access or create temp directory: ${tempDir.path}. Error: $e",
+        );
+      }
     }
     return TempStorageService._internalDeserialize(tempDir: tempDir);
   }
