@@ -13,21 +13,21 @@ class ConnectPageInstructionNarrowProvider extends StatelessWidget {
     return Column(
       spacing: 16,
       children: [
-        ConnectPageIconEntry(
+        const ConnectPageIconEntry(
           iconPath: 'assets/images/listen_music.svg',
           description: TextSpan(text: 'Click “Open app” in browser'),
           descriptionTextSize: TextSizes.normal,
           isSmallVariant: true,
         ),
 
-        ConnectPageIconEntry(
+        const ConnectPageIconEntry(
           iconPath: 'assets/images/click_link.svg',
           description: TextSpan(text: "Or open session link"),
           descriptionTextSize: TextSizes.normal,
           isSmallVariant: true,
         ),
         if (showQr)
-          ConnectPageIconEntry(
+          const ConnectPageIconEntry(
             iconPath: 'assets/images/scan_qr.svg',
             description: TextSpan(text: "Or scan the QR code"),
             descriptionTextSize: TextSizes.normal,

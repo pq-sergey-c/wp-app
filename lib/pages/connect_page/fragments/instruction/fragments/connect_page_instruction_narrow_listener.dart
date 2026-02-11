@@ -14,13 +14,13 @@ class ConnectPageInstructionNarrowListener extends StatelessWidget {
       spacing: 16,
       children: [
         if (showQr)
-          ConnectPageIconEntry(
+          const ConnectPageIconEntry(
             iconPath: 'assets/images/scan_qr.svg',
             description: TextSpan(text: "Scan the QR code"),
             descriptionTextSize: TextSizes.normal,
           ),
 
-        ConnectPageIconEntry(
+        const ConnectPageIconEntry(
           iconPath: 'assets/images/click_link.svg',
           description: TextSpan(text: "Open session link"),
           descriptionTextSize: TextSizes.normal,

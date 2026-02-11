@@ -20,7 +20,6 @@ import 'package:wp_player/types/session/user_role/user_role.dart';
 part 'popups/leaving_page_confirmation_popup.dart';
 part 'popups/network_issues_popup.dart';
 part 'popups/info_popup.dart';
-part 'effects/navigate_home_on_session_end.dart';
 
 class PlayerPage extends HookConsumerWidget {
   const PlayerPage({super.key});
@@ -33,7 +32,6 @@ class PlayerPage extends HookConsumerWidget {
     _usePlayerPageInfoPopup(popup);
     _usePlayerPageLeavingPageConfirmationPopup(context, ref, popup);
     _usePlayerPageNetworkIssuesPopup(popup);
-    _usePlayerPageNavigateHomeOnSessionEnd(context, ref);
 
     final double topPadding = layout.selectByScreenType(
       mobile: 24,
@@ -50,7 +48,10 @@ class PlayerPage extends HookConsumerWidget {
               mobile: layout.screenWidth - 64,
               orElse: layout.getClampedWidth(percent: 55, min: 300),
             ),
-            height: max(layout.screenHeight - topPadding - layout.paddingTop - layout.paddingBottom - bottomPadding, 650),
+            height: max(
+              layout.screenHeight - topPadding - layout.paddingTop - layout.paddingBottom - bottomPadding,
+              650,
+            ),
             child: const MusicPlayer(),
           ),
         ),

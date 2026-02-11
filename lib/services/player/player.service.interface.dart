@@ -35,8 +35,6 @@ abstract class IPlayerService {
 
   ValueListenable<Duration?>? get playbackDurationListenable;
 
-  ValueListenable<bool>? get sessionEndedListenable;
-
   ValueListenable<Duration?>? get bufferedTimeListenable;
 
   SessionInfo get sessionInformation;
@@ -49,13 +47,9 @@ abstract class IPlayerService {
   /// Report that websocket connection has been restored
   void reportConnectionRestored();
 
-  void reportSessionEnded();
-
   bool get isOffline;
 
   ValueListenable<bool>? get isConnectionInterruptedListenable;
 
-  set streamingType(
-    UserRole userRole,
-  ); // TODO: remove once this info is obtained from link / QR
+  set streamingType(UserRole userRole); // TODO: remove once this info is obtained from link / QR
 }

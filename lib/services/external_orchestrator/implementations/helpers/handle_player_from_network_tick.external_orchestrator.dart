@@ -30,19 +30,14 @@ void externalOrchestratorHandlePlayerStateFromTick(final NetworkTick tick) {
         NativeLibraryPlayer().start();
       }
     case NetworkSessionState.postlude || NetworkSessionState.ended:
-      // postlude isn't used anymore, change in API - consider removing
-      // due to change in API ended now works as postlude (date of dart client change: 12 November 2025)
+      // NetworkSessionState.postlude isn't used anymore, change in API - consider removing
+      // due to change in API NetworkSessionState.ended now works as postlude (date of dart client change: 12 November 2025)
       if (NativeLibraryPlayer().lastSetPhase.value != WpPhase.wpPhasePost) {
         NativeLibraryPlayer().changePhaseTo(WpPhase.wpPhasePost, at: Duration.zero);
       }
       // Only start if not already playing
       if (!NativeLibraryPlayer().isPlayingState.value) {
         NativeLibraryPlayer().start();
-      }
-
-      // TODO: resolve do we need to play postlude or to close player
-      if (tick.sessionState == NetworkSessionState.ended) {
-        PlayerService().reportSessionEnded();
       }
     case NetworkSessionState.planned:
       // do nothing
