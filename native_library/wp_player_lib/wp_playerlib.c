@@ -16,7 +16,7 @@
 
 // =====================[ Miniaudio setup ]=====================
 
-#define MA_NO_AAUDIO // uncomment out to disable new android audio backend
+// #define MA_NO_AAUDIO // uncomment out to disable new android audio backend
 
 #define MA_NO_ENCODING
 
@@ -80,7 +80,9 @@ typedef struct WpPlayerLibState {
 
   ma_resource_manager* maResourceManager;
   ma_context* context;
+  #ifndef MA_NO_DEVICE_IO
   ma_device* device;
+  #endif
   ma_engine* engine;
   WpPlayerLibPhase phase;
   _Atomic WpPlayerLibPlaybackState playbackState;
@@ -99,13 +101,18 @@ typedef struct WpPlayerLibState {
 void _wp_playerlib_on_master_fader_target_reached(void* context);
 WpPlayerLibTickResult _wp_playerlib_tick_callback(void* context);
 
+#ifndef MA_NO_DEVICE_IO
 void deviceDataCallback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount) {
   (void)pInput;
   WpPlayerLibState* state = (WpPlayerLibState*)pDevice->pUserData;
   ma_engine *engine = state->engine;
   ma_engine_read_pcm_frames(engine, pOutput, frameCount, NULL);
 }
+#endif
 
+#ifdef MA_EMSCRIPTEN
+__attribute__((noinline)) EMSCRIPTEN_KEEPALIVE
+#endif
 WpPlayerLibState* wp_playerlib_create(float sampleRate, int64_t bufferingLookahead) {
   WpPlayerLibState* state = (WpPlayerLibState*)malloc(sizeof(WpPlayerLibState));
   if (!state) {
@@ -114,7 +121,9 @@ WpPlayerLibState* wp_playerlib_create(float sampleRate, int64_t bufferingLookahe
   }
   state->maResourceManager = NULL;
   state->context = NULL;
+  #ifndef MA_NO_DEVICE_IO
   state->device = NULL;
+  #endif
   state->engine = NULL;
   state->phase = WP_PHASE_NONE;
   state->playbackState = WP_PB_STOPPED;
@@ -136,7 +145,7 @@ WpPlayerLibState* wp_playerlib_create(float sampleRate, int64_t bufferingLookahe
   maResourceManagerConfig.ppCustomDecodingBackendVTables = pCustomBackendVTables;
   maResourceManagerConfig.customDecodingBackendCount = sizeof(pCustomBackendVTables) / sizeof(pCustomBackendVTables[0]);
   maResourceManagerConfig.pCustomDecodingBackendUserData = NULL;
-  #ifdef MA_NO_DEVICE_IO_FAKE
+  #ifdef MA_NO_DEVICE_IO
     maResourceManagerConfig.jobThreadCount = 0;
     maResourceManagerConfig.flags = MA_RESOURCE_MANAGER_FLAG_NON_BLOCKING;
   #endif
@@ -154,7 +163,7 @@ WpPlayerLibState* wp_playerlib_create(float sampleRate, int64_t bufferingLookahe
     return NULL;
   }
 
-  #ifndef MA_NO_DEVICE_IO_FAKE
+  #ifndef MA_NO_DEVICE_IO
     ma_context_config contextConfig = ma_context_config_init();
     contextConfig.coreaudio.sessionCategory = ma_ios_session_category_playback;
     state->context = (ma_context*)malloc(sizeof(ma_context));
@@ -196,7 +205,7 @@ WpPlayerLibState* wp_playerlib_create(float sampleRate, int64_t bufferingLookahe
   engineConfig.sampleRate = sampleRate;
   engineConfig.channels = 2;
   engineConfig.noAutoStart = MA_TRUE;
-  #ifndef MA_NO_DEVICE_IO_FAKE
+  #ifndef MA_NO_DEVICE_IO
     engineConfig.pContext = state->context;
     engineConfig.pDevice = state->device;
   #endif
@@ -265,9 +274,7 @@ WpPlayerLibState* wp_playerlib_create(float sampleRate, int64_t bufferingLookahe
   result = ma_node_attach_output_bus(state->compressor, 0, state->volumeControlFader, 0);
   if (result != MA_SUCCESS) {
     printf("Failed to attach compressor to volume control fader. Error code: %d\n", result);
-  MUTEX_LOCK(state->mutex);
-  MUTEX_UNLOCK(state->mutex);
-    MUTEX_LOCK(state->mutex);
+    wp_playerlib_destroy(state);
     return NULL;
   }
 
@@ -401,7 +408,7 @@ WpPlayerLibTickResult _wp_playerlib_tick_callback(void* context) {
   WpPlayerLibTickResult result = WP_TICK_RESULT_OK;
   if (state->playbackState == WP_PB_STOP_FINALISING) {
     printf("Finalising stop\n");
-    #ifndef MA_NO_DEVICE_IO_FAKE
+    #ifndef MA_NO_DEVICE_IO
       ma_result engineResult = ma_engine_stop(state->engine);
       if (engineResult != MA_SUCCESS) {
         printf("Failed to stop audio device %d\n", engineResult);
@@ -410,7 +417,7 @@ WpPlayerLibTickResult _wp_playerlib_tick_callback(void* context) {
     state->playbackState = WP_PB_STOPPED;
     result = WP_TICK_RESULT_STOP;
   } else {
-    #ifdef MA_NO_DEVICE_IO_FAKE
+    #ifdef MA_NO_DEVICE_IO
       bool isStillStarted = true;
     #else
       bool isStillStarted = ma_device_is_started(ma_engine_get_device(state->engine));
@@ -480,34 +487,42 @@ bool wp_playerlib_is_started(WpPlayerLibState* state) {
   if (state == NULL) {
     return false;
   }
-  return state->playbackState == WP_PB_PLAYING || state->playbackState == WP_PB_STOPPING;
+  return state->playbackState == WP_PB_PLAYING;
 }
 
 int wp_playerlib_start(WpPlayerLibState* state) {
   MUTEX_LOCK(state->mutex);
-  if (state->playbackState != WP_PB_STOPPED) {
+  if (state->playbackState == WP_PB_PLAYING) {
     MUTEX_UNLOCK(state->mutex);
     return 0;
   }
-  #ifndef MA_NO_DEVICE_IO_FAKE
-    ma_result result = ma_engine_start(state->engine);
-    if (result != MA_SUCCESS) {
-      printf("Failed to start engine: %d\n", result);
-      MUTEX_UNLOCK(state->mutex);
-      return result;
-    }
-  #endif
-  state->playbackState = WP_PB_PLAYING;
-  int tickerResult = wp_playerlib_tick_start(&state->ticker);
-  if (tickerResult != 0) {
-    printf("Failed to start ticker: %d\n", tickerResult);
-    state->playbackState = WP_PB_STOPPED;
-    #ifndef MA_NO_DEVICE_IO_FAKE
-      ma_engine_stop(state->engine);
+
+  if (state->playbackState == WP_PB_STOPPED) {
+    // Full restart from stopped state
+    #ifndef MA_NO_DEVICE_IO
+      ma_result result = ma_engine_start(state->engine);
+      if (result != MA_SUCCESS) {
+        printf("Failed to start engine: %d\n", result);
+        MUTEX_UNLOCK(state->mutex);
+        return result;
+      }
     #endif
-    MUTEX_UNLOCK(state->mutex);
-    return tickerResult;
+    state->playbackState = WP_PB_PLAYING;
+    int tickerResult = wp_playerlib_tick_start(&state->ticker);
+    if (tickerResult != 0) {
+      printf("Failed to start ticker: %d\n", tickerResult);
+      state->playbackState = WP_PB_STOPPED;
+      #ifndef MA_NO_DEVICE_IO
+        ma_engine_stop(state->engine);
+      #endif
+      MUTEX_UNLOCK(state->mutex);
+      return tickerResult;
+    }
+  } else {
+    // STOPPING or STOP_FINALISING state: just reverse the fade
+    state->playbackState = WP_PB_PLAYING;
   }
+
   wp_playerlib_fader_set_target(state->masterFader, 1.0f, ma_engine_get_sample_rate(state->engine) * 1);
   MUTEX_UNLOCK(state->mutex);
   return 0;
@@ -561,13 +576,13 @@ float wp_playerlib_get_buffered_time(WpPlayerLibState* state) {
 
 void wp_playerlib_destroy(WpPlayerLibState* state) {
   MUTEX_LOCK(state->mutex);
-  state->playbackState = WP_PB_STOP_FINALISING;
-  MUTEX_UNLOCK(state->mutex);
-
-  wp_playerlib_tick_await_stop(&state->ticker);
-
-  MUTEX_LOCK(state->mutex);
-
+  bool needToStop = state->playbackState != WP_PB_STOPPED;
+  if (needToStop) {
+    state->playbackState = WP_PB_STOP_FINALISING;
+    MUTEX_UNLOCK(state->mutex);
+    wp_playerlib_tick_await_stop(&state->ticker);
+    MUTEX_LOCK(state->mutex);
+  }
   for (size_t i = 0; i < state->streamCount; i++) {
     wp_playerlib_stream_destroy(state->streams[i]);
     free(state->streams[i]);
@@ -585,7 +600,7 @@ void wp_playerlib_destroy(WpPlayerLibState* state) {
   free(state->masterFader);
 
   if (state->engine != NULL) {
-    #ifndef MA_NO_DEVICE_IO_FAKE
+    #ifndef MA_NO_DEVICE_IO
       int engineResult = ma_engine_stop(state->engine);
       if (engineResult != MA_SUCCESS) {
         printf("Failed to stop audio device %d\n", engineResult);
@@ -599,7 +614,7 @@ void wp_playerlib_destroy(WpPlayerLibState* state) {
     free(state->maResourceManager);
     state->maResourceManager = NULL;
   }
-  #ifndef MA_NO_DEVICE_IO_FAKE
+  #ifndef MA_NO_DEVICE_IO
     if (state->device != NULL) {
       ma_device_uninit(state->device);
       free(state->device);
@@ -664,8 +679,4 @@ void wp_playerlib_read_pcm_frames(WpPlayerLibState* state, void *output, uint64_
   if (remainingFrames > 0) {
     _wp_playerlib_read_pcm_frames(state, outArray + numChunks * chunkSize * 2, remainingFrames);
   }
-}
-
-char* hello_ohayo(void) {
-  return strdup("Hello from original lib");
 }

@@ -8,7 +8,7 @@
 
 # export ASAN_OPTIONS=detect_leaks=1
 # cmake -Bbuild/test -DTARGET_GROUP=test -DCMAKE_C_FLAGS="-fsanitize=address -g" -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address"  -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX .
-cmake -Bbuild/test -DTARGET_GROUP=test .
+cmake -Bbuild/test -DTARGET_GROUP=test -DCMAKE_POLICY_VERSION_MINIMUM=3.5  .
 if [ $? -ne 0 ]; then
     echo "cmake failed"
     exit 1

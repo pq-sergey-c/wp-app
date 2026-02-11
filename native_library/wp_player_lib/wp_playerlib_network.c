@@ -4,36 +4,32 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-
-#define MAX_ONGOING_REQUESTS 200
-
+#include "android_print.h"
 // Let's be fairly persistent with our retries
 #define MAX_RETRIES 100
 #define RETRY_INTERVAL_MS 3000
 
 typedef struct WpPlayerLibNetworkOngoingRequest {
-  bool occupied;
   int64_t requestedAt;
   const char *groupId;
   uint32_t id;
   const char *url;
   uint32_t tryCount;
+  struct WpPlayerLibNetworkOngoingRequest *next;
 } WpPlayerLibNetworkOngoingRequest;
 
 typedef struct WpPlayerLibNetworkState {
   WpNetworkRequestCallback networkRequestCallback;
   WpCancelNetworkRequestCallback cancelNetworkRequestCallback;
   const void *networkRequestCallbackContext;
-  WpPlayerLibNetworkOngoingRequest ongoingRequests[MAX_ONGOING_REQUESTS];
+  WpPlayerLibNetworkOngoingRequest *ongoingRequests;
 } WpPlayerLibNetworkState;
 
 void wp_playerlib_network_init(WpPlayerLibNetworkState *state) {
   state->networkRequestCallback = NULL;
   state->cancelNetworkRequestCallback = NULL;
   state->networkRequestCallbackContext = NULL;
-  for (uint32_t i = 0; i < MAX_ONGOING_REQUESTS; i++) {
-    state->ongoingRequests[i].occupied = false;
-  }
+  state->ongoingRequests = NULL;
 }
 
 void wp_playerlib_network_connect(WpPlayerLibNetworkState *state, WpNetworkRequestCallback networkRequestCallback, WpCancelNetworkRequestCallback cancelNetworkRequestCallback, const void *networkRequestCallbackContext) {
@@ -43,59 +39,78 @@ void wp_playerlib_network_connect(WpPlayerLibNetworkState *state, WpNetworkReque
 }
 
 WpPlayerLibNetworkOngoingRequest* init_ongoing_request(WpPlayerLibNetworkState *state, const char *groupId, uint32_t id, const char *url) {
-  for (uint32_t i = 0; i < MAX_ONGOING_REQUESTS; i++) {
-    if (!state->ongoingRequests[i].occupied) {
-      state->ongoingRequests[i].occupied = true;
-      state->ongoingRequests[i].requestedAt = time_now();
-      state->ongoingRequests[i].groupId = strdup(groupId);
-      state->ongoingRequests[i].id = id;
-      state->ongoingRequests[i].url = strdup(url);
-      if (state->ongoingRequests[i].url == NULL) {
-        printf("ERROR: Failed to strdup url: %d\n", errno);
-        state->ongoingRequests[i].occupied = false;
-        return NULL;
-      }
-      state->ongoingRequests[i].tryCount = 0;
-      return &state->ongoingRequests[i];
-    }
+  WpPlayerLibNetworkOngoingRequest *req = (WpPlayerLibNetworkOngoingRequest *)malloc(sizeof(WpPlayerLibNetworkOngoingRequest));
+  if (req == NULL) {
+    printf("ERROR: Failed to allocate memory for network request\n");
+    return NULL;
   }
-  return NULL;
+  req->requestedAt = time_now();
+  req->groupId = strdup(groupId);
+  req->id = id;
+  req->url = strdup(url);
+  if (req->url == NULL) {
+    printf("ERROR: Failed to strdup url: %d\n", errno);
+    free((void*)req->groupId);
+    free(req);
+    return NULL;
+  }
+  req->tryCount = 0;
+  req->next = state->ongoingRequests;
+  state->ongoingRequests = req;
+  return req;
 }
 
 WpPlayerLibNetworkOngoingRequest* get_ongoing_request(WpPlayerLibNetworkState *state, uint32_t id) {
-  for (uint32_t i = 0; i < MAX_ONGOING_REQUESTS; i++) {
-    if (state->ongoingRequests[i].occupied && state->ongoingRequests[i].id == id) {
-      return &state->ongoingRequests[i];
+  WpPlayerLibNetworkOngoingRequest *req = state->ongoingRequests;
+  while (req != NULL) {
+    if (req->id == id) {
+      return req;
     }
+    req = req->next;
   }
   return NULL;
 }
 
 void clear_ongoing_request(WpPlayerLibNetworkState *state, uint32_t id) {
-  for (uint32_t i = 0; i < MAX_ONGOING_REQUESTS; i++) {
-    if (state->ongoingRequests[i].occupied && state->ongoingRequests[i].id == id) {
-      state->ongoingRequests[i].occupied = false;
-      // See if the group has a further request we could fire now
-      const char *groupId = state->ongoingRequests[i].groupId;
-      int nextRequestIdx = -1;
-      for (uint32_t j = 0; j < MAX_ONGOING_REQUESTS; j++) {
-        if (
-          state->ongoingRequests[j].occupied &&
-          strcmp(state->ongoingRequests[j].groupId, groupId) == 0 &&
-          state->ongoingRequests[j].tryCount == 0 &&
-          (nextRequestIdx == -1 || state->ongoingRequests[j].requestedAt < state->ongoingRequests[nextRequestIdx].requestedAt)
-        ) {
-          nextRequestIdx = j;
+  WpPlayerLibNetworkOngoingRequest *prev = NULL;
+  WpPlayerLibNetworkOngoingRequest *req = state->ongoingRequests;
+  while (req != NULL) {
+    if (req->id == id) {
+      // Remove from list
+      if (prev == NULL) {
+        state->ongoingRequests = req->next;
+      } else {
+        prev->next = req->next;
+      }
+      // Only promote the next queued request if we removed an active one.
+      // Removing a queued request (tryCount == 0) shouldn't promote because
+      // it didn't free a network slot - the group still has its active request.
+      if (req->tryCount > 0) {
+        const char *groupId = req->groupId;
+        WpPlayerLibNetworkOngoingRequest *candidate = state->ongoingRequests;
+        WpPlayerLibNetworkOngoingRequest *nextRequest = NULL;
+        while (candidate != NULL) {
+          if (
+            strcmp(candidate->groupId, groupId) == 0 &&
+            candidate->tryCount == 0 &&
+            (nextRequest == NULL || candidate->requestedAt <= nextRequest->requestedAt)
+          ) {
+            nextRequest = candidate;
+          }
+          candidate = candidate->next;
+        }
+        if (nextRequest != NULL) {
+          state->networkRequestCallback(state->networkRequestCallbackContext, nextRequest->id, nextRequest->url, time_now());
+          nextRequest->tryCount = 1;
         }
       }
-      if (nextRequestIdx >= 0) {
-        state->networkRequestCallback(state->networkRequestCallbackContext, state->ongoingRequests[nextRequestIdx].id, state->ongoingRequests[nextRequestIdx].url, time_now());
-        state->ongoingRequests[nextRequestIdx].tryCount = 1;
-      }
-      free((void*)state->ongoingRequests[i].groupId);
-      free((void*)state->ongoingRequests[i].url);
+      free((void*)req->groupId);
+      free((void*)req->url);
+      free(req);
       break;
     }
+    prev = req;
+    req = req->next;
   }
 }
 
@@ -105,22 +120,23 @@ void wp_playerlib_network_request(WpPlayerLibNetworkState *state, const char *gr
     if (ongoingRequest != NULL) {
       // Let's only fire this now if the group doesn't already have an ongoing request
       bool groupHasOngoingRequest = false;
-      for (uint32_t i = 0; i < MAX_ONGOING_REQUESTS; i++) {
+      WpPlayerLibNetworkOngoingRequest *req = state->ongoingRequests;
+      while (req != NULL) {
         if (
-          state->ongoingRequests[i].occupied &&
-          strcmp(state->ongoingRequests[i].groupId, groupId) == 0 &&
-          state->ongoingRequests[i].tryCount > 0
+          strcmp(req->groupId, groupId) == 0 &&
+          req->tryCount > 0
         ) {
           groupHasOngoingRequest = true;
           break;
         }
+        req = req->next;
       }
       if (!groupHasOngoingRequest) {
         ongoingRequest->tryCount = 1;
         state->networkRequestCallback(state->networkRequestCallbackContext, id, url, scheduledTime);
       }
     } else {
-      printf("ERROR: Too many ongoing requests to track %s\n", url);
+      printf("ERROR: Failed to allocate network request for %s\n", url);
     }
   }
 }
@@ -153,7 +169,6 @@ bool wp_playerlib_network_retry_network_response(WpPlayerLibNetworkState *state,
         return true;
       }
     } else {
-      // We aren't handling retries for this request (presumably because there wasn't room to track it which shouldn't really happen)
       return false;
     }
   }
@@ -163,9 +178,13 @@ void wp_playerlib_network_destroy(WpPlayerLibNetworkState *state) {
   state->networkRequestCallback = NULL;
   state->cancelNetworkRequestCallback = NULL;
   state->networkRequestCallbackContext = NULL;
-  for (uint32_t i = 0; i < MAX_ONGOING_REQUESTS; i++) {
-    if (state->ongoingRequests[i].occupied) {
-      free((void*)state->ongoingRequests[i].url);
-    }
+  WpPlayerLibNetworkOngoingRequest *req = state->ongoingRequests;
+  while (req != NULL) {
+    WpPlayerLibNetworkOngoingRequest *next = req->next;
+    free((void*)req->groupId);
+    free((void*)req->url);
+    free(req);
+    req = next;
   }
+  state->ongoingRequests = NULL;
 }

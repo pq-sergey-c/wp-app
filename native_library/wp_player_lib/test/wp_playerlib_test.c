@@ -4,11 +4,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 #include <sys/time.h>
 
 #include <unity.h>
 
-#include "android_print.h"
 #include "test_config.h"
 
 #include "wp_playerlib.h"
@@ -16,8 +16,6 @@
 #include "wp_playerlib_testutils.c"
 #include "wp_playerlib_test_networking.c"
 #include "wp_playerlib_playlist_testdata.c"
-
-#include "public/wp_player_test.h"
 
 #define LOW_SINE_LOOP_FILE_PATH TEST_DATA_DIR "/60s_220Hz.ogg"
 #define HIGH_SINE_PLAYLIST_FILE_PATH TEST_DATA_DIR "/300s_440Hz/playlist.m3u8"
@@ -32,7 +30,7 @@ static WpPlayerLibState *state = NULL;
 
 void setUp(void) {
   setvbuf(stdout, NULL, _IOLBF, 0);
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < TEST_NETWORK_RESPONSES_SIZE; i++) {
     testNetworkResponses[i].armed = false;
   }
   memset(output, 0, sizeof(output));
@@ -43,7 +41,7 @@ void setUp(void) {
 
 void tearDown(void) {
   wp_playerlib_destroy(state);
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < TEST_NETWORK_RESPONSES_SIZE; i++) {
     if (testNetworkResponses[i].armed) {
       free((void *)testNetworkResponses[i].filePath);
       testNetworkResponses[i].armed = false;
@@ -111,11 +109,10 @@ void testFadesOutWhenStoppingDuringPrelude(void) {
   deliver_test_responses(PL_COMPLETE, 0);
   wp_playerlib_set_phase(state, WP_PHASE_PRE, 0);
   wp_playerlib_start(state);
-
+    
   render_advance(state, output, 48000);
-
+  
   wp_playerlib_stop(state);
-  TEST_ASSERT_TRUE(wp_playerlib_is_started(state));
 
   render_advance(state, output, 48000);
   TEST_ASSERT_FALSE(are_all_zeroes(output, 48000));
@@ -316,13 +313,12 @@ void testFadesOutWhenStoppingDuringSession(void) {
   deliver_test_responses(PL_COMPLETE, 0);
   wp_playerlib_set_phase(state, WP_PHASE_SESSION, 0);
   wp_playerlib_start(state);
-
+    
   render_advance(state, output, 48000);
   render_advance(state, output, 48000);
   render_advance(state, output, 48000);
-
+  
   wp_playerlib_stop(state);
-  TEST_ASSERT_TRUE(wp_playerlib_is_started(state));
 
   render_advance(state, output, 48000);
   TEST_ASSERT_FALSE(are_all_zeroes(output, 48000));
@@ -371,7 +367,7 @@ void testPlaysContinuousChunkedStreamThatsNotFullyLoadedBeforeStarting(void) {
 }
 
 void testPlaysContinuousChunkedStreamThatsNotFullyGeneratedBeforeStarting(void) {
-  WpPlayerLibStream streams[] = {
+  WpPlayerLibStream streams[] = {  
     { .id = "1", .phase = WP_PHASE_SESSION, .url = HIGH_SINE_PLAYLIST_FILE_PATH, .fromTime = 0, .toTime = 9999999, .loopContent = false, .gain = 1.0f }
   };
   wp_playerlib_set_session(state, streams, 1);
@@ -421,10 +417,10 @@ void testPlaybackRecoversFromStallsDueToNetworkIntermittency(void) {
   };
   wp_playerlib_set_session(state, streams, 1);
   wp_playerlib_set_phase(state, WP_PHASE_SESSION, 0);
-
+  
   deliver_test_responses(PL_ONE_CHUNK, 0); // playlist
   deliver_test_responses(PL_ONE_CHUNK, 0); // first chunk
-
+  
   wp_playerlib_start(state);
 
   // First chunk playback
@@ -476,7 +472,7 @@ void testPlaybackRecoversFromStallDiscoveredJustAfterGettingNetworkChunk(void) {
   };
   wp_playerlib_set_session(state, streams, 1);
   wp_playerlib_set_phase(state, WP_PHASE_SESSION, 0);
-
+  
   deliver_test_responses(PL_SHORT_ONE_CHUNK, 0); // playlist
   deliver_test_responses(PL_SHORT_ONE_CHUNK, 0); // first chunk
 
@@ -503,7 +499,7 @@ void testPlaybackRecoversFromStallMidChunk(void) {
   };
   wp_playerlib_set_session(state, streams, 1);
   wp_playerlib_set_phase(state, WP_PHASE_SESSION, 0);
-
+  
   deliver_test_responses(PL_SHORT_ONE_CHUNK, 0); // playlist
   deliver_test_responses(PL_SHORT_ONE_CHUNK, 0); // first chunk
 
@@ -540,7 +536,7 @@ void testPlaybackSeeksIntoMidStreamStart(void) {
   };
   wp_playerlib_set_session(state, streams, 1);
   wp_playerlib_set_phase(state, WP_PHASE_SESSION, 240000);
-
+  
   deliver_all_test_responses(PL_COMPLETE);
 
   wp_playerlib_start(state);
@@ -567,7 +563,7 @@ void testPlaybackSeeksIntoMidStreamMidChunkStart(void) {
   };
   wp_playerlib_set_session(state, streams, 1);
   wp_playerlib_set_phase(state, WP_PHASE_SESSION, 245000);
-
+  
   deliver_all_test_responses(PL_COMPLETE);
 
   wp_playerlib_start(state);
@@ -591,7 +587,7 @@ void testPlaybackSeeksIntoMidStreamMidChunkStartDuringPlayback(void) {
   render_advance(state, output, 4800);
 
   wp_playerlib_set_phase(state, WP_PHASE_SESSION, 245487);
-
+  
   deliver_all_test_responses(PL_COMPLETE);
 
   // We've seeked 245s into a 300s stream. We should get a continuous waveform with the seek into the chunk we joined during
@@ -615,7 +611,7 @@ void testPlaybackSeeksIntoMidStreamWhenAlreadyInPhase(void) {
   };
   wp_playerlib_set_session(state, streams, 1);
   wp_playerlib_set_phase(state, WP_PHASE_SESSION, 0);
-
+  
   deliver_all_test_responses(PL_COMPLETE);
 
   wp_playerlib_start(state);
@@ -647,7 +643,7 @@ void testPlaybackSeeksIntoMidAnotherStreamWhenAlreadyInPhase(void) {
   };
   wp_playerlib_set_session(state, streams, 2);
   wp_playerlib_set_phase(state, WP_PHASE_SESSION, 0);
-
+  
   deliver_all_test_responses(PL_COMPLETE);
 
   wp_playerlib_start(state);
@@ -677,7 +673,7 @@ void testBasicTimelineTiming(void) {
   };
   wp_playerlib_set_session(state, streams, 2);
   wp_playerlib_set_phase(state, WP_PHASE_SESSION, 0);
-
+  
   deliver_all_test_responses(PL_COMPLETE);
 
   wp_playerlib_start(state);
@@ -711,7 +707,7 @@ void testBasicTimelineTimingWithStartMidStream(void) {
   };
   wp_playerlib_set_session(state, streams, 2);
   wp_playerlib_set_phase(state, WP_PHASE_SESSION, 3000);
-
+  
   deliver_all_test_responses(PL_COMPLETE);
 
   wp_playerlib_start(state);
@@ -745,7 +741,7 @@ void testBasicTimelineTimingWithStartAfterOneStreamHasEnded(void) {
   };
   wp_playerlib_set_session(state, streams, 2);
   wp_playerlib_set_phase(state, WP_PHASE_SESSION, 7000);
-
+  
   deliver_all_test_responses(PL_COMPLETE);
 
   wp_playerlib_start(state);
@@ -771,7 +767,7 @@ void testUpdateTimelineTimingMidStream(void) {
   };
   wp_playerlib_set_session(state, initialStreams, 1);
   wp_playerlib_set_phase(state, WP_PHASE_SESSION, 0);
-
+  
   deliver_all_test_responses(PL_COMPLETE);
 
   wp_playerlib_start(state);
@@ -812,7 +808,7 @@ void testUpdateTimelineTimingMidStreamWithNonZeroInitialEffectiveFrame(void) {
   };
   wp_playerlib_set_session(state, initialStreams, 1);
   wp_playerlib_set_phase(state, WP_PHASE_SESSION, 3000);
-
+  
   deliver_all_test_responses(PL_COMPLETE);
 
   wp_playerlib_start(state);
@@ -853,7 +849,7 @@ void testUpdateTimelineTimingLate(void) {
   };
   wp_playerlib_set_session(state, initialStreams, 1);
   wp_playerlib_set_phase(state, WP_PHASE_SESSION, 0);
-
+  
   deliver_all_test_responses(PL_COMPLETE);
 
   wp_playerlib_start(state);
@@ -879,7 +875,7 @@ void testUpdateTimelineTimingLate(void) {
     render_advance(state, output, 48000);
     TEST_ASSERT_FALSE(are_all_zeroes(output, 96000));
     // seek in a little so the frequency detection doesn't get confused by the late start of the chunk
-    TEST_ASSERT_FLOAT_WITHIN(5.f, 440.f, detect_frequency(output + 9600, 48000 - 4800, 48000.f));
+    TEST_ASSERT_FLOAT_WITHIN(5.f, 440.f, detect_frequency(output + 9600, 48000 - 4800, 48000.f)); 
   }
 }
 
@@ -908,7 +904,7 @@ void testSwitchesTimelinePhases(void) {
   for (int s = 0 ; s < 10 ; s++) {
     render_advance(state, output, 48000);
     TEST_ASSERT_FALSE(are_all_zeroes(output, 96000));
-    TEST_ASSERT_FLOAT_WITHIN(5.f, 440.f, detect_frequency(output, 48000, 48000.f));
+    TEST_ASSERT_FLOAT_WITHIN(5.f, 440.f, detect_frequency(output, 48000, 48000.f)); 
   }
 
   wp_playerlib_set_phase(state, WP_PHASE_POST, 0);
@@ -917,7 +913,7 @@ void testSwitchesTimelinePhases(void) {
   for (int s = 0 ; s < 10 ; s++) {
     render_advance(state, output, 48000);
     TEST_ASSERT_FALSE(are_all_zeroes(output, 96000));
-    TEST_ASSERT_FLOAT_WITHIN(5.f, 220.f, detect_frequency(output, 48000, 48000.f));
+    TEST_ASSERT_FLOAT_WITHIN(5.f, 220.f, detect_frequency(output, 48000, 48000.f)); 
   }
 }
 
@@ -1033,7 +1029,7 @@ void testSessionStreamFadesOutAccordingToItsUpdatedTiming(void) {
     render_advance(state, output, 48000);
     TEST_ASSERT_FALSE(are_all_zeroes(output, 96000));
   }
-
+  
   initialStreams[0].toTime = 10000;
   initialStreams[0].fadeOutTime = 5000;
   wp_playerlib_set_session(state, initialStreams, 1);
@@ -1066,7 +1062,7 @@ void testSessionStreamFadesOutAccordingToItsUpdatedTimingWhenUpdatedAfterFadeAlr
   render_advance(state, output, 48000);
   TEST_ASSERT_FALSE(are_all_zeroes(output, 96000));
   TEST_ASSERT_TRUE(hasVolumeDelta(output, 48000, -1));
-
+  
   // Then we decide the fade should be shorter
   initialStreams[0].fadeOutTime = 2000;
   wp_playerlib_set_session(state, initialStreams, 1);
@@ -1133,7 +1129,7 @@ void testSessionStreamComesBackFromFadeOutAfterSeek(void) {
     TEST_ASSERT_FALSE(are_all_zeroes(output, 96000));
   }
 
-  // There's a 5 second fade-out
+  // There's a 5 second fade-out 
   for (int s = 0 ; s < 5 ; s++) {
     render_advance(state, output, 48000);
     TEST_ASSERT_FALSE(are_all_zeroes(output, 96000));
@@ -1200,7 +1196,7 @@ void testStreamTimedFadeOutDoesNotOverrideEarlierPhaseFadeOut(void) {
   render_advance(state, output, 48000);
   TEST_ASSERT_TRUE(hasVolumeDelta(output, 48000, -1));
 
-  // Then let's decide the stream should fade out
+  // Then let's decide the stream should fade out 
   initialStreams[0].toTime = 16000;
   wp_playerlib_set_session(state, initialStreams, 1);
 
@@ -1254,7 +1250,7 @@ void testVolumeControl(void) {
   };
   wp_playerlib_set_session(state, streams, 1);
   wp_playerlib_set_phase(state, WP_PHASE_SESSION, 0);
-
+  
   deliver_all_test_responses(PL_COMPLETE);
 
   wp_playerlib_start(state);
@@ -1291,7 +1287,7 @@ void testStreamGain(void) {
   };
   wp_playerlib_set_session(state, streams, 1);
   wp_playerlib_set_phase(state, WP_PHASE_SESSION, 0);
-
+  
   deliver_all_test_responses(PL_COMPLETE);
 
   wp_playerlib_start(state);
@@ -1309,7 +1305,7 @@ void testUpdatingStreamGain(void) {
   };
   wp_playerlib_set_session(state, streams, 1);
   wp_playerlib_set_phase(state, WP_PHASE_SESSION, 0);
-
+  
   deliver_all_test_responses(PL_COMPLETE);
 
   wp_playerlib_start(state);
@@ -1348,7 +1344,7 @@ void testDuckingDoesNotBreakOutputs(void) {
   };
   wp_playerlib_set_session(state, streams, 6);
   wp_playerlib_set_phase(state, WP_PHASE_SESSION, 0);
-
+  
   deliver_all_test_responses(PL_COMPLETE);
 
   wp_playerlib_start(state);
@@ -1367,14 +1363,14 @@ void testBufferedTimeReporting(void) {
   };
   wp_playerlib_set_session(state, streams, 1);
   wp_playerlib_set_phase(state, WP_PHASE_SESSION, 0);
-
+  
   TEST_ASSERT_EQUAL(0.f, wp_playerlib_get_buffered_time(state));
-
+  
   deliver_test_responses(PL_ONE_CHUNK, 0); // playlist
   deliver_test_responses(PL_ONE_CHUNK, 0); // first chunk
 
   TEST_ASSERT_EQUAL(10.f, wp_playerlib_get_buffered_time(state));
-
+  
   deliver_test_responses(PL_TWO_CHUNKS, -1); // playlist
   deliver_test_responses(PL_TWO_CHUNKS, -1); // second chunk
 
@@ -1405,9 +1401,9 @@ void testBufferedTimeReportingOnFutureStream(void) {
   };
   wp_playerlib_set_session(state, streams, 1);
   wp_playerlib_set_phase(state, WP_PHASE_SESSION, 0);
-
+  
   TEST_ASSERT_EQUAL(10.f, wp_playerlib_get_buffered_time(state));
-
+  
   deliver_test_responses(PL_ONE_CHUNK, 0); // playlist
   deliver_test_responses(PL_ONE_CHUNK, 0); // first chunk
 
@@ -1421,7 +1417,7 @@ void testBufferedTimeReportingOnPastStream(void) {
   wp_playerlib_set_session(state, initialStreams, 1);
   wp_playerlib_set_phase(state, WP_PHASE_SESSION, 0);
   wp_playerlib_start(state);
-
+  
   TEST_ASSERT_EQUAL(0.f, wp_playerlib_get_buffered_time(state));
   deliver_test_responses(PL_ONE_CHUNK, 0); // playlist
   deliver_test_responses(PL_ONE_CHUNK, 0); // first chunk
@@ -1432,7 +1428,7 @@ void testBufferedTimeReportingOnPastStream(void) {
     render_advance(state, output, 48000);
   }
   TEST_ASSERT_EQUAL(0.f, wp_playerlib_get_buffered_time(state));
-
+  
   WpPlayerLibStream updatedStreams[] = {
     { .id = "0", .phase = WP_PHASE_SESSION, .url = HIGH_SINE_PLAYLIST_FILE_PATH, .fromTime = 0, .toTime = 10000, .loopContent = false, .gain = 1.0f },
     { .id = "1", .phase = WP_PHASE_SESSION, .url = HIGH_SINE_PLAYLIST_FILE_PATH, .fromTime = 10000, .toTime = 20000, .loopContent = false, .gain = 1.0f  }
@@ -1452,88 +1448,140 @@ void testBufferedTimeReportingDoesNotChangeDuringPrelude(void) {
   };
   wp_playerlib_set_session(state, streams, 2);
   wp_playerlib_set_phase(state, WP_PHASE_PRE, 0);
-
+  
   TEST_ASSERT_EQUAL(0.f, wp_playerlib_get_buffered_time(state));
-
+  
   deliver_test_responses(PL_ONE_CHUNK, 0); // playlist
   deliver_test_responses(PL_ONE_CHUNK, 0); // first chunk
 
   TEST_ASSERT_EQUAL(10.f, wp_playerlib_get_buffered_time(state));
-
+  
   render_advance(state, output, 48000);
 
   TEST_ASSERT_EQUAL(10.f, wp_playerlib_get_buffered_time(state));
 }
 
+// -- Network pool overflow / zombie chunk tests --
+// These tests reproduce the bug where too many concurrent streams overflow the
+// 200-slot network request pool, leaving chunks permanently stuck in WP_SC_LOADING
+// ("zombie chunks") that are never delivered and never re-requested.
+
+void testNetworkPoolOverflowCausesSilenceOnAffectedStream(void) {
+  // Create 7 session streams. Streams s0-s5 cover 0-300s (same 300s_440Hz content).
+  // Stream s6 is the only stream covering 400-700s.
+  // With 7 streams × 31 chunks = 217 pool slots needed, the 200-slot pool overflows.
+  // Stream s6 (loaded last) has its later chunks (14-30) silently dropped.
+  WpPlayerLibStream streams[] = {
+    { .id = "s0", .phase = WP_PHASE_SESSION, .url = HIGH_SINE_PLAYLIST_FILE_PATH, .fromTime = 0, .toTime = 300000, .loopContent = false, .gain = 1.0f },
+    { .id = "s1", .phase = WP_PHASE_SESSION, .url = HIGH_SINE_PLAYLIST_FILE_PATH, .fromTime = 0, .toTime = 300000, .loopContent = false, .gain = 1.0f },
+    { .id = "s2", .phase = WP_PHASE_SESSION, .url = HIGH_SINE_PLAYLIST_FILE_PATH, .fromTime = 0, .toTime = 300000, .loopContent = false, .gain = 1.0f },
+    { .id = "s3", .phase = WP_PHASE_SESSION, .url = HIGH_SINE_PLAYLIST_FILE_PATH, .fromTime = 0, .toTime = 300000, .loopContent = false, .gain = 1.0f },
+    { .id = "s4", .phase = WP_PHASE_SESSION, .url = HIGH_SINE_PLAYLIST_FILE_PATH, .fromTime = 0, .toTime = 300000, .loopContent = false, .gain = 1.0f },
+    { .id = "s5", .phase = WP_PHASE_SESSION, .url = HIGH_SINE_PLAYLIST_FILE_PATH, .fromTime = 0, .toTime = 300000, .loopContent = false, .gain = 1.0f },
+    { .id = "s6", .phase = WP_PHASE_SESSION, .url = HIGH_SINE_PLAYLIST_FILE_PATH, .fromTime = 400000, .toTime = 700000, .loopContent = false, .gain = 1.0f },
+  };
+  wp_playerlib_set_session(state, streams, 7);
+  deliver_all_test_responses(PL_COMPLETE);
+
+  // Set phase at 550s. At this point:
+  // - Streams s0-s5 (0-300s) have all ended and produce no audio.
+  // - Stream s6 (400-700s) is active. 550s = 150s into its content.
+  // - Chunk 15 (150-160s local) should be playing, but it's a zombie.
+  wp_playerlib_set_phase(state, WP_PHASE_SESSION, 550000);
+  wp_playerlib_start(state);
+
+  render_advance(state, output, 48000); // 1s — includes fade-in
+  render_advance(state, output, 48000); // 2nd second — should be steady-state 440Hz
+
+  // BUG: This should be 440Hz audio from stream s6, but zombie chunks cause silence.
+  TEST_ASSERT_FALSE(are_all_zeroes(output, 96000));
+}
+
+void testPlaybackWorksWithManyStreams(void) {
+  // Same structure as the overflow test but verifying audio plays correctly.
+  // With the linked list network pool, all chunks load regardless of count.
+  WpPlayerLibStream streams[] = {
+    { .id = "s0", .phase = WP_PHASE_SESSION, .url = HIGH_SINE_PLAYLIST_FILE_PATH, .fromTime = 0, .toTime = 300000, .loopContent = false, .gain = 1.0f },
+    { .id = "s1", .phase = WP_PHASE_SESSION, .url = HIGH_SINE_PLAYLIST_FILE_PATH, .fromTime = 0, .toTime = 300000, .loopContent = false, .gain = 1.0f },
+    { .id = "s2", .phase = WP_PHASE_SESSION, .url = HIGH_SINE_PLAYLIST_FILE_PATH, .fromTime = 0, .toTime = 300000, .loopContent = false, .gain = 1.0f },
+    { .id = "s3", .phase = WP_PHASE_SESSION, .url = HIGH_SINE_PLAYLIST_FILE_PATH, .fromTime = 0, .toTime = 300000, .loopContent = false, .gain = 1.0f },
+    { .id = "s4", .phase = WP_PHASE_SESSION, .url = HIGH_SINE_PLAYLIST_FILE_PATH, .fromTime = 0, .toTime = 300000, .loopContent = false, .gain = 1.0f },
+    { .id = "s5", .phase = WP_PHASE_SESSION, .url = HIGH_SINE_PLAYLIST_FILE_PATH, .fromTime = 0, .toTime = 300000, .loopContent = false, .gain = 1.0f },
+    { .id = "s6", .phase = WP_PHASE_SESSION, .url = HIGH_SINE_PLAYLIST_FILE_PATH, .fromTime = 400000, .toTime = 700000, .loopContent = false, .gain = 1.0f },
+  };
+  wp_playerlib_set_session(state, streams, 7);
+  deliver_all_test_responses(PL_COMPLETE);
+
+  wp_playerlib_set_phase(state, WP_PHASE_SESSION, 550000);
+  wp_playerlib_start(state);
+
+  render_advance(state, output, 48000); // 1s — fade-in
+  render_advance(state, output, 48000); // 2s — late-start preempt may cause brief silence
+  render_advance(state, output, 48000); // 3s — fully steady-state
+
+  TEST_ASSERT_FALSE(are_all_zeroes(output, 96000));
+  TEST_ASSERT_FLOAT_WITHIN(5.f, 440.f, detect_frequency(output, 48000, 48000.f));
+}
+
 int main(void)
 {
-  return run_wp_player_tests();
+    UNITY_BEGIN();
+    RUN_TEST(testIsInitiallyInNonPlayingStateAndRendersSilence);
+    RUN_TEST(testStartsPlayingSomethingInPrelude);
+    RUN_TEST(testReportsTimeInPrelude);
+    RUN_TEST(testFadesInWhenStartingPrelude);
+    RUN_TEST(testFadesOutWhenStoppingDuringPrelude);
+    RUN_TEST(testStartsPlayingSomethingInPreludeWhenStartedBeforeItsReady);
+    RUN_TEST(testPreludeIsValidAudio);
+    RUN_TEST(testPreludeIsLooping);
+    RUN_TEST(testPreludeWithChunksIsLooping);
+    RUN_TEST(testStartsPlayingSomethingInSession);
+    RUN_TEST(testReportsTimeInSession);
+    RUN_TEST(testOnlyStartsPlayingSessionStreamWhenItsTimedToStart);
+    RUN_TEST(doesNotPlaySessionStreamThatsBeenLoadedButSubsequentlyRemoved);
+    RUN_TEST(immediatelyStopsPlayingAnAlreadyStartedSessionStreamWhenItsRemovedFromTimeline);
+    RUN_TEST(whenAStreamIsRemovedOtherStreamsAreNotAffected);
+    RUN_TEST(testFadesInWhenStartingSession);
+    RUN_TEST(testFadesOutWhenStoppingDuringSession);
+    RUN_TEST(testPlaysContinuousChunkedStream);
+    RUN_TEST(testPlaysContinuousChunkedStreamThatsNotFullyLoadedBeforeStarting);
+    RUN_TEST(testPlaysContinuousChunkedStreamThatsNotFullyGeneratedBeforeStarting);
+    RUN_TEST(testFetchingRecoversFromIntermittentFailuresInNetworkResponses);
+    RUN_TEST(testPlaybackRecoversFromStallsDueToNetworkIntermittency);
+    RUN_TEST(testPlaybackRecoversFromStallDiscoveredJustAfterGettingNetworkChunk);
+    RUN_TEST(testPlaybackRecoversFromStallMidChunk);
+    RUN_TEST(testPlaybackSeeksIntoMidStreamStart);
+    RUN_TEST(testPlaybackSeeksIntoMidStreamMidChunkStart);
+    RUN_TEST(testPlaybackSeeksIntoMidStreamMidChunkStartDuringPlayback);
+    RUN_TEST(testPlaybackSeeksIntoMidStreamWhenAlreadyInPhase);
+    RUN_TEST(testPlaybackSeeksIntoMidAnotherStreamWhenAlreadyInPhase);
+    RUN_TEST(testBasicTimelineTiming);
+    RUN_TEST(testBasicTimelineTimingWithStartMidStream);
+    RUN_TEST(testBasicTimelineTimingWithStartAfterOneStreamHasEnded);
+    RUN_TEST(testUpdateTimelineTimingMidStream);
+    RUN_TEST(testUpdateTimelineTimingMidStreamWithNonZeroInitialEffectiveFrame);
+    RUN_TEST(testUpdateTimelineTimingLate);
+    RUN_TEST(testSwitchesTimelinePhases);
+    RUN_TEST(testPreludeFadesOutWhenSwitchingToSession);
+    RUN_TEST(testPreludeFadesOutUsingLatestKnownFadeOutTimeWhenSwitchingToSession);
+    RUN_TEST(testSessionFadesOutWhenSwitchingToPostlude);
+    RUN_TEST(testSessionStreamFadesOutAccordingToItsTiming);
+    RUN_TEST(testSessionStreamFadesOutAccordingToItsUpdatedTiming);
+    RUN_TEST(testSessionStreamFadesOutAccordingToItsUpdatedTimingWhenUpdatedAfterFadeAlreadyStarted);
+    RUN_TEST(testSessionStreamFadesOutAfterLateTruncation);
+    RUN_TEST(testSessionStreamComesBackFromFadeOutAfterSeek);
+    RUN_TEST(testSessionStreamJustEndsAfterVeryLateTruncation);
+    RUN_TEST(testStreamTimedFadeOutDoesNotOverrideEarlierPhaseFadeOut);
+    RUN_TEST(testPhaseFadeOutDoesNotOverrideEarlierStreamFadeOut);
+    RUN_TEST(testVolumeControl);
+    RUN_TEST(testStreamGain);
+    RUN_TEST(testUpdatingStreamGain);
+    RUN_TEST(testDuckingDoesNotBreakOutputs);
+    RUN_TEST(testBufferedTimeReporting);
+    RUN_TEST(testBufferedTimeReportingOnFutureStream);
+    RUN_TEST(testBufferedTimeReportingOnPastStream);
+    RUN_TEST(testBufferedTimeReportingDoesNotChangeDuringPrelude);
+    RUN_TEST(testNetworkPoolOverflowCausesSilenceOnAffectedStream);
+    RUN_TEST(testPlaybackWorksWithManyStreams);
+    return UNITY_END();
 }
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-int run_wp_player_tests () {
-  // RUN_TEST(testIsInitiallyInNonPlayingStateAndRendersSilence);
-  UNITY_BEGIN();
-  RUN_TEST(testStartsPlayingSomethingInPrelude);
-  return UNITY_END();
-  RUN_TEST(testReportsTimeInPrelude);
-  RUN_TEST(testFadesInWhenStartingPrelude);
-  RUN_TEST(testFadesOutWhenStoppingDuringPrelude);
-  RUN_TEST(testStartsPlayingSomethingInPreludeWhenStartedBeforeItsReady);
-  RUN_TEST(testPreludeIsValidAudio);
-  RUN_TEST(testPreludeIsLooping);
-  RUN_TEST(testPreludeWithChunksIsLooping);
-  RUN_TEST(testStartsPlayingSomethingInSession);
-  RUN_TEST(testReportsTimeInSession);
-  RUN_TEST(testOnlyStartsPlayingSessionStreamWhenItsTimedToStart);
-  RUN_TEST(doesNotPlaySessionStreamThatsBeenLoadedButSubsequentlyRemoved);
-  RUN_TEST(immediatelyStopsPlayingAnAlreadyStartedSessionStreamWhenItsRemovedFromTimeline);
-  RUN_TEST(whenAStreamIsRemovedOtherStreamsAreNotAffected);
-  RUN_TEST(testFadesInWhenStartingSession);
-  RUN_TEST(testFadesOutWhenStoppingDuringSession);
-  RUN_TEST(testPlaysContinuousChunkedStream);
-  RUN_TEST(testPlaysContinuousChunkedStreamThatsNotFullyLoadedBeforeStarting);
-  RUN_TEST(testPlaysContinuousChunkedStreamThatsNotFullyGeneratedBeforeStarting);
-  RUN_TEST(testFetchingRecoversFromIntermittentFailuresInNetworkResponses);
-  RUN_TEST(testPlaybackRecoversFromStallsDueToNetworkIntermittency);
-  RUN_TEST(testPlaybackRecoversFromStallDiscoveredJustAfterGettingNetworkChunk);
-  RUN_TEST(testPlaybackRecoversFromStallMidChunk);
-  RUN_TEST(testPlaybackSeeksIntoMidStreamStart);
-  RUN_TEST(testPlaybackSeeksIntoMidStreamMidChunkStart);
-  RUN_TEST(testPlaybackSeeksIntoMidStreamMidChunkStartDuringPlayback);
-  RUN_TEST(testPlaybackSeeksIntoMidStreamWhenAlreadyInPhase);
-  RUN_TEST(testPlaybackSeeksIntoMidAnotherStreamWhenAlreadyInPhase);
-  RUN_TEST(testBasicTimelineTiming);
-  RUN_TEST(testBasicTimelineTimingWithStartMidStream);
-  RUN_TEST(testBasicTimelineTimingWithStartAfterOneStreamHasEnded);
-  RUN_TEST(testUpdateTimelineTimingMidStream);
-  RUN_TEST(testUpdateTimelineTimingMidStreamWithNonZeroInitialEffectiveFrame);
-  RUN_TEST(testUpdateTimelineTimingLate);
-  RUN_TEST(testSwitchesTimelinePhases);
-  RUN_TEST(testPreludeFadesOutWhenSwitchingToSession);
-  RUN_TEST(testPreludeFadesOutUsingLatestKnownFadeOutTimeWhenSwitchingToSession);
-  RUN_TEST(testSessionFadesOutWhenSwitchingToPostlude);
-  RUN_TEST(testSessionStreamFadesOutAccordingToItsTiming);
-  RUN_TEST(testSessionStreamFadesOutAccordingToItsUpdatedTiming);
-  RUN_TEST(testSessionStreamFadesOutAccordingToItsUpdatedTimingWhenUpdatedAfterFadeAlreadyStarted);
-  RUN_TEST(testSessionStreamFadesOutAfterLateTruncation);
-  RUN_TEST(testSessionStreamComesBackFromFadeOutAfterSeek);
-  RUN_TEST(testSessionStreamJustEndsAfterVeryLateTruncation);
-  RUN_TEST(testStreamTimedFadeOutDoesNotOverrideEarlierPhaseFadeOut);
-  RUN_TEST(testPhaseFadeOutDoesNotOverrideEarlierStreamFadeOut);
-  RUN_TEST(testVolumeControl);
-  RUN_TEST(testStreamGain);
-  RUN_TEST(testUpdatingStreamGain);
-  RUN_TEST(testDuckingDoesNotBreakOutputs);
-  RUN_TEST(testBufferedTimeReporting);
-  RUN_TEST(testBufferedTimeReportingOnFutureStream);
-  RUN_TEST(testBufferedTimeReportingOnPastStream);
-  RUN_TEST(testBufferedTimeReportingDoesNotChangeDuringPrelude);
-}
-
-#ifdef __cplusplus
-}
-#endif

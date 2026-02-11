@@ -8,6 +8,8 @@
 #include <unistd.h>
 #include <sys/time.h>
 
+#define TEST_NETWORK_RESPONSES_SIZE 300
+
 static int64_t time_now (void); // due to author usage of #include ".c"
 
 typedef struct TestNetworkResponse {
@@ -18,7 +20,7 @@ typedef struct TestNetworkResponse {
   const char *filePath;
   int64_t timeUntilScheduled;
 } TestNetworkResponse;
-static TestNetworkResponse testNetworkResponses[100];
+static TestNetworkResponse testNetworkResponses[TEST_NETWORK_RESPONSES_SIZE];
 
 static int64_t time_now(void) {
   struct timeval tv;
@@ -27,7 +29,7 @@ static int64_t time_now(void) {
 }
 
 void test_network_request_callback(const void *context, uint32_t id, const char* url, int64_t scheduledTime) {
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < TEST_NETWORK_RESPONSES_SIZE; i++) {
     if (!testNetworkResponses[i].armed) {
       testNetworkResponses[i].armed = true;
       testNetworkResponses[i].player = (WpPlayerLibState *)context;
@@ -41,7 +43,7 @@ void test_network_request_callback(const void *context, uint32_t id, const char*
 }
 
 void test_cancel_network_request_callback(const void *context, uint32_t id) {
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < TEST_NETWORK_RESPONSES_SIZE; i++) {
     if (testNetworkResponses[i].armed && testNetworkResponses[i].id == id) {
       testNetworkResponses[i].armed = false;
       free((void *)testNetworkResponses[i].filePath);
@@ -80,7 +82,7 @@ void copy_file_to_tmp(const char *src, const char *dst) {
 }
 
 void deliver_test_responses(const char *playlistContent, int64_t timePassed) {
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < TEST_NETWORK_RESPONSES_SIZE; i++) {
     if (testNetworkResponses[i].armed) {
       if (timePassed != -1) {
         testNetworkResponses[i].timeUntilScheduled -= timePassed;
@@ -116,7 +118,7 @@ void deliver_test_responses(const char *playlistContent, int64_t timePassed) {
 }
 
 void fail_test_responses(int32_t timePassed) {
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < TEST_NETWORK_RESPONSES_SIZE; i++) {
     if (testNetworkResponses[i].armed) {
       if (timePassed != -1) {
         testNetworkResponses[i].timeUntilScheduled -= timePassed;
@@ -136,7 +138,7 @@ void deliver_all_test_responses(const char *playlistContent) {
   while (true) {
     deliver_test_responses(playlistContent, -1);
     bool noneArmed = true;
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < TEST_NETWORK_RESPONSES_SIZE; i++) {
       if (testNetworkResponses[i].armed) {
         noneArmed = false;
       }

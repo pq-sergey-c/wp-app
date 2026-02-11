@@ -28,11 +28,13 @@ int wp_playerlib_tick_start(WpPlayerLibTickState* state) {
 }
 
 void wp_playerlib_tick_tick_now(WpPlayerLibTickState* state) {
-  emscripten_async_run_in_main_runtime_thread(
-    EM_FUNC_SIG_WITH_N_PARAMETERS(1),
-    _wp_playerlib_tick_interval_callback,
-    state
-  );
+  (void)state;
+  // On JS we do not schedule an immediate tick,
+  // as doing it through Emscripten proxy queue can cause re-entrancy
+  // and deadlocks. In the case of stopping, the system just waits
+  // for the next scheduled tick. If we ever need to go faster,
+  // we should do our own postMessage to main and invocation of the tick
+  // externally.
 }
 
 void wp_playerlib_tick_await_stop(WpPlayerLibTickState* state) {

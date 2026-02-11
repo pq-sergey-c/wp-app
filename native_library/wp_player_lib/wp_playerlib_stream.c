@@ -390,7 +390,10 @@ int wp_playerlib_stream_leave_phase(WpPlayerLibStreamState *state, bool isPlayin
 
 int wp_playerlib_stream_seek_to_time_in_phase(WpPlayerLibStreamState *state, int64_t timelineToEngineFrameDelta, bool isPlaying) {
   state->timelineToEngineFrameDelta = timelineToEngineFrameDelta;
-  for (int i = 0; i < WP_PLAYERLIB_STREAM_CHUNK_COUNT; i++) {
+  // Uninit chunks in reverse order so that queued network requests (higher slots)
+  // are cancelled before the active request (slot 0). This prevents the cancel cascade
+  // where cancelling the active request promotes a queued one that's about to be cancelled.
+  for (int i = WP_PLAYERLIB_STREAM_CHUNK_COUNT - 1; i >= 0; i--) {
     state->chunks[i].timelineToEngineFrameDelta = timelineToEngineFrameDelta;
     wp_playerlib_stream_chunk_uninit(&state->chunks[i]);
   }

@@ -80,7 +80,7 @@ int _wp_playerlib_stream_chunk_start(WpPlayerLibStreamChunkState *state, bool is
   int64_t preemptStartUntilEngineFrame = currentEngineFrame;
   if (isPlaying) {
     preemptStartUntilEngineFrame += (ma_uint64)(WP_PLAYERLIB_CHUNK_LATE_START_PREEMPT * ma_engine_get_sample_rate(state->engine));
-  } 
+  }
   if (endEngineFrame <= preemptStartUntilEngineFrame) {
     printf("Chunk would start when it's already past its end time: %"PRId64" < %"PRId64". Ignoring.\n", endEngineFrame, preemptStartUntilEngineFrame);
     state->status = WP_SC_ARMED;

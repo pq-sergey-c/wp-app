@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22.1)
+cmake_minimum_required(VERSION 3.21.2)
 
 if(APPLE)
 project(WpPlayerLib LANGUAGES C OBJC)
@@ -20,7 +20,7 @@ add_library(${PROJECT_NAME} STATIC wp_playerlib.c)
 if(ANDROID)
     # Note: seems that dependencies use fopen64, fseeko, ftello - but Android has not of them
     #       so by this it is attempt to change functions for reading without changing code
-    # add_definitions(-Dfopen64=fopen -Dfseeko=fseek -Dftello=ftell)
+    add_definitions(-Dfopen64=fopen -Dfseeko=fseek -Dftello=ftell)
 
     # Note: not sure about need of next one
     add_definitions(-D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE)
@@ -121,7 +121,7 @@ elseif(ANDROID) # may be unneeded
     target_link_libraries(${PROJECT_NAME}
         log
         android
-        OpenSLES # uncomment to link to old audio backenda
+        # OpenSLES # uncomment to link to old audio backenda
     )
 elseif(WIN32)
     target_link_libraries(${PROJECT_NAME}
@@ -158,5 +158,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-Wall -Wextra -W
 #          but encounter problem which may be (not sure) that somewhy jobs aren't been added
 #          so until fix leave it with if (FALSE)
 if (FALSE) # if (TARGET_GROUP STREQUAL "testing")
-    add_subdirectory("test")
+  include(CTest)
+  add_subdirectory(vendor/unity)
+  add_subdirectory(test)
 endif()

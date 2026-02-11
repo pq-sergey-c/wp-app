@@ -25,3 +25,5 @@ Currently system is already prepared but in case of updating native code, tools 
 4. Recompile flutter app
 
 > **Note:** try to think ahead about possible clutter due to configuration/compilation to not add work for yourself (maybe copy native_library source code to some temp file and config/compile there)
+
+> **Note (2):** you might need to clean rebuild windows build if native_library was changed (e.g with `flutter clean`)
