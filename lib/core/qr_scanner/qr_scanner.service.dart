@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wp_player/services/player/player.service.dart';
@@ -13,10 +11,7 @@ bool isQRScannerSupportedOnPlatform() {
 enum ScanQrStatus { cancelled, failed, success }
 
 extension ResolveQR on PlayerService {
-  Future<ScanQrStatus> scanResolveQR(
-    BuildContext context, {
-    void Function()? onSuccessScan,
-  }) async {
+  Future<ScanQrStatus> scanResolveQR(BuildContext context, {void Function()? onSuccessScan}) async {
     final String? qrLink = await context.push<String?>('/standalone/scan_qr');
     if (qrLink == null) return ScanQrStatus.cancelled;
 

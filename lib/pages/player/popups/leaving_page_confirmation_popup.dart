@@ -51,6 +51,10 @@ void _usePlayerPageLeavingPageConfirmationPopup(BuildContext context, WidgetRef 
 
     return () {
       disposed = true;
+      // TODO: this is potentially problematic — set(null) called during disposal
+      // sometime causes a setState during build error,
+      // but deferring it risks a race with the next page's addPostFrameCallback set() call.
+      // maybe use Mutex around both setters? - but what about dispose [first -> reset] required sequence
       callbackProviderNotifier?.set(null);
     };
   }, []);
