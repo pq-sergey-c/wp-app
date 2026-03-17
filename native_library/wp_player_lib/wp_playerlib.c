@@ -562,8 +562,10 @@ void wp_playerlib_set_volume(WpPlayerLibState* state, float volume) {
 
 float wp_playerlib_get_buffered_time(WpPlayerLibState* state) {
   MUTEX_LOCK(state->mutex);
-  // The amount of time we can play with the current buffer is the minimum
-  // of the buffered time of all streams
+  // Report the maximum buffered time across session streams.
+  // The main music stream will always have the largest buffer (it spans
+  // the entire session), so fmaxf naturally selects its value. Short-lived
+  // voiceover streams report smaller/zero values and are ignored by max.
   float bufferedTime = 0.0f;
   for (size_t i = 0; i < state->streamCount; i++) {
     if (state->streams[i]->phase == WP_PHASE_SESSION) {

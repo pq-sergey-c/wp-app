@@ -1,6 +1,10 @@
 part of '../player.page.dart';
 
-void _usePlayerPageLeavingPageConfirmationPopup(BuildContext context, WidgetRef ref, PopupNotifier popup) {
+void _usePlayerPageLeavingPageConfirmationPopup(
+  BuildContext context,
+  WidgetRef ref,
+  PopupNotifier popup,
+) {
   final canClosePageCallbackIsRunning = useRef<bool>(false);
 
   final canClosePageCallback = useCallback(() async {
@@ -10,7 +14,10 @@ void _usePlayerPageLeavingPageConfirmationPopup(BuildContext context, WidgetRef 
     final toStop = await popup.addPopupYesNo(
       content: PopupContent.text(
         title: "Warning",
-        message: const TextSpan(text: "This action will stop streaming the music. Do you want to continue?"),
+        message: const TextSpan(
+          text:
+              "This action will stop streaming the music. Do you want to continue?",
+        ),
       ),
       yesText: "Yes",
       noText: "No",
@@ -46,16 +53,19 @@ void _usePlayerPageLeavingPageConfirmationPopup(BuildContext context, WidgetRef 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       callbackProviderNotifier = ref.read(goHomeCallbackProvider.notifier);
       if (disposed) return;
-      callbackProviderNotifier!.set(() async => (canGoHome: await canClosePageCallback()));
+      callbackProviderNotifier!.set(
+        () async => (canGoHome: await canClosePageCallback()),
+      );
     });
 
     return () {
       disposed = true;
-      // TODO: this is potentially problematic — set(null) called during disposal
-      // sometime causes a setState during build error,
-      // but deferring it risks a race with the next page's addPostFrameCallback set() call.
-      // maybe use Mutex around both setters? - but what about dispose [first -> reset] required sequence
-      callbackProviderNotifier?.set(null);
+      final notifier = callbackProviderNotifier;
+      if (notifier != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          notifier.set(null);
+        });
+      }
     };
   }, []);
 }
