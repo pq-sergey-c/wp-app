@@ -9,6 +9,7 @@ import 'package:wp_player/services/player.native_lib/functions/close_setup/setup
 import 'package:wp_player/services/player.native_lib/functions/controls/get_buffered_time.function.dart';
 import 'package:wp_player/services/player.native_lib/functions/controls/get_phase.function.dart';
 import 'package:wp_player/services/player.native_lib/functions/controls/get_time_in_phase.function.dart';
+import 'package:wp_player/services/player.native_lib/functions/controls/has_audio_started.function.dart';
 import 'package:wp_player/services/player.native_lib/functions/controls/seek_to_time_in_phase.function.dart';
 import 'package:wp_player/services/player.native_lib/functions/controls/set_phase.function.dart';
 import 'package:wp_player/services/player.native_lib/functions/controls/set_volume.function.dart';
@@ -216,6 +217,9 @@ class NativeLibraryPlayer implements INativePlayer {
 
   @override
   Duration get bufferedTime => getBufferedTimeNative(_nativeLibrary, _playerHandler);
+
+  @override
+  bool get hasAudioStarted => hasAudioStartedNative(_nativeLibrary, _playerHandler);
 
   @override
   String generateGreeting(final int number, final double divider, final String name) {

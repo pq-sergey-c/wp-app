@@ -11,6 +11,8 @@ class LinkInput extends StatefulWidget {
     this.onSubmitted,
     this.schemas = const <RegExp>[],
     this.trailingActions = const <Widget>[],
+    this.maxLines = 1,
+    this.fontSize,
     super.key,
   });
 
@@ -19,6 +21,8 @@ class LinkInput extends StatefulWidget {
   final ValueChanged<String>? onSubmitted;
   final List<RegExp> schemas;
   final List<Widget> trailingActions;
+  final int? maxLines;
+  final double? fontSize;
 
   @override
   State<LinkInput> createState() => _LinkInputState();
@@ -99,6 +103,8 @@ class _LinkInputState extends State<LinkInput> {
       onTapOutside: (_) => FocusScope.of(context).unfocus(),
       textInputAction: TextInputAction.done,
       trailingActions: widget.trailingActions,
+      maxLines: widget.maxLines,
+      fontSize: widget.fontSize,
     );
   }
 }

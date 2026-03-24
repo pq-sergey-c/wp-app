@@ -47,6 +47,7 @@ class PlayerService implements IPlayerService {
     _isConnectionInterruptedNotifier = null;
     _bufferedTimeNotifierPoller?.dispose();
     _bufferedTimeNotifierPoller = null;
+    _hasAudioStartedNotifier.value = false;
 
     await _orchestrator?.dispose();
     _orchestrator = null;
@@ -73,6 +74,7 @@ class PlayerService implements IPlayerService {
 
   // Data from native player
   AsyncNotifierPoller<Duration>? _bufferedTimeNotifierPoller;
+  final ValueNotifier<bool> _hasAudioStartedNotifier = ValueNotifier(false);
   static const Duration _bufferedTimePollingInterval = Duration(
     milliseconds: 490,
   );
@@ -202,6 +204,9 @@ class PlayerService implements IPlayerService {
   ValueListenable<Duration?>? get bufferedTimeListenable =>
       _bufferedTimeNotifierPoller?.listenable;
 
+  ValueListenable<bool> get hasAudioStartedListenable =>
+      _hasAudioStartedNotifier;
+
   // -----------------------------------------------------------
 
   Future<void> _startSession(
@@ -227,11 +232,14 @@ class PlayerService implements IPlayerService {
     );
 
     _bufferedTimeNotifierPoller = AsyncNotifierPoller(
-      getValueFunction:
-          () =>
-              !NativeLibraryPlayer.isPlayerExist()
-                  ? null
-                  : NativeLibraryPlayer().bufferedTime,
+      getValueFunction: () {
+        if (!NativeLibraryPlayer.isPlayerExist()) return null;
+        if (!_hasAudioStartedNotifier.value &&
+            NativeLibraryPlayer().hasAudioStarted) {
+          _hasAudioStartedNotifier.value = true;
+        }
+        return NativeLibraryPlayer().bufferedTime;
+      },
       interval: _bufferedTimePollingInterval,
       name: 'Buffered time (poller of native player value)',
     )..start();

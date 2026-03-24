@@ -93,6 +93,8 @@ typedef struct WpPlayerLibState {
   wp_playerlib_fader *volumeControlFader;
   wp_playerlib_compressor *compressor;
 
+  _Atomic bool audioStarted;
+
   size_t streamCount;
   WpPlayerLibStreamState **streams;
 
@@ -131,6 +133,7 @@ WpPlayerLibState* wp_playerlib_create(float sampleRate, int64_t bufferingLookahe
   state->timelineToEngineFrameDelta[WP_PHASE_PRE] = 0;
   state->timelineToEngineFrameDelta[WP_PHASE_SESSION] = 0;
   state->timelineToEngineFrameDelta[WP_PHASE_POST] = 0;
+  state->audioStarted = false;
   state->streamCount = 0;
   state->streams = NULL;
   state->bufferingLookahead = bufferingLookahead;
@@ -351,7 +354,8 @@ int _wp_playerlib_init_or_update_stream(WpPlayerLibState *state, const WpPlayerL
     stream->sidechainGain,
     &state->network,
     &outputs,
-    state->engine
+    state->engine,
+    &state->audioStarted
   );
   if (initResult != 0) {
     return initResult;
@@ -499,6 +503,7 @@ int wp_playerlib_start(WpPlayerLibState* state) {
 
   if (state->playbackState == WP_PB_STOPPED) {
     // Full restart from stopped state
+    state->audioStarted = false;
     #ifndef MA_NO_DEVICE_IO
       ma_result result = ma_engine_start(state->engine);
       if (result != MA_SUCCESS) {
@@ -574,6 +579,13 @@ float wp_playerlib_get_buffered_time(WpPlayerLibState* state) {
   }
   MUTEX_UNLOCK(state->mutex);
   return bufferedTime;
+}
+
+bool wp_playerlib_has_audio_started(WpPlayerLibState* state) {
+  if (state == NULL) {
+    return false;
+  }
+  return state->audioStarted;
 }
 
 void wp_playerlib_destroy(WpPlayerLibState* state) {

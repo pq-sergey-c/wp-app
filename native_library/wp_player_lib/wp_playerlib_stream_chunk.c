@@ -35,14 +35,17 @@ typedef struct WpPlayerLibStreamChunkState {
   ma_resource_manager_data_source *dataSource;
   ma_sound *sound;
 
+  _Atomic bool *audioStartedFlag;
+
 } WpPlayerLibStreamChunkState;
 
-int wp_playerlib_stream_chunk_init(WpPlayerLibStreamChunkState *state, ma_uint64 streamStartTimelineFrame, ma_uint64 streamEndTimelineFrame, ma_int64 phaseEndEngineFrame, ma_node *outputNode, ma_engine *engine, WpPlayerLibNetworkState *network) {
+int wp_playerlib_stream_chunk_init(WpPlayerLibStreamChunkState *state, ma_uint64 streamStartTimelineFrame, ma_uint64 streamEndTimelineFrame, ma_int64 phaseEndEngineFrame, ma_node *outputNode, ma_engine *engine, WpPlayerLibNetworkState *network, _Atomic bool *audioStartedFlag) {
   state->id = wp_playerlib_id_next();
   state->status = WP_SC_UNINITIALISED;
   state->outputNode = outputNode;
   state->engine = engine;
   state->network = network;
+  state->audioStartedFlag = audioStartedFlag;
   state->dataSource = NULL;
   state->sound = NULL;
   state->filePath = NULL;
@@ -107,6 +110,9 @@ int _wp_playerlib_stream_chunk_start(WpPlayerLibStreamChunkState *state, bool is
     return -1;
   } else {
     state->status = WP_SC_STARTED;
+    if (state->audioStartedFlag && !(*state->audioStartedFlag)) {
+      *state->audioStartedFlag = true;
+    }
     return 0;
   }
 }

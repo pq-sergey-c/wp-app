@@ -28,6 +28,8 @@ typedef struct WpPlayerLibStreamState {
   int64_t timelineToEngineFrameDelta;
   int64_t phaseEndEngineFrame;
 
+  _Atomic bool *audioStartedFlag;
+
 } WpPlayerLibStreamState;
 
 typedef struct WpPlayerLibStreamOutputs {
@@ -41,11 +43,12 @@ typedef struct WpPlayerLibStreamOutputs {
 
 void wp_playerlib_stream_destroy(WpPlayerLibStreamState *state);
 
-int wp_playerlib_stream_init(WpPlayerLibStreamState *state, const char *id, WpPlayerLibPhase phase, uint64_t fromTime, uint64_t toTime, uint64_t fadeOutTime, const char *streamUrl, bool loop, int64_t bufferingLookahead, float gain, bool usesSidechain, float sidechainGain, WpPlayerLibNetworkState *network, WpPlayerLibStreamOutputs *outputs, ma_engine *engine) {
+int wp_playerlib_stream_init(WpPlayerLibStreamState *state, const char *id, WpPlayerLibPhase phase, uint64_t fromTime, uint64_t toTime, uint64_t fadeOutTime, const char *streamUrl, bool loop, int64_t bufferingLookahead, float gain, bool usesSidechain, float sidechainGain, WpPlayerLibNetworkState *network, WpPlayerLibStreamOutputs *outputs, ma_engine *engine, _Atomic bool *audioStartedFlag) {
   state->id = strdup(id);
   state->phase = phase;
   state->status = WP_S_ARMED;
   state->engine = engine;
+  state->audioStartedFlag = audioStartedFlag;
   uint64_t sr = ma_engine_get_sample_rate(engine);
   state->streamStartTimelineFrame = fromTime * sr / 1000;
   state->streamEndTimelineFrame = toTime * sr / 1000;
@@ -152,7 +155,7 @@ int wp_playerlib_stream_init(WpPlayerLibStreamState *state, const char *id, WpPl
   }
 
   for (int i = 0; i < WP_PLAYERLIB_STREAM_CHUNK_COUNT; i++) {
-    result = wp_playerlib_stream_chunk_init(&state->chunks[i], state->streamStartTimelineFrame, state->streamEndTimelineFrame, state->phaseEndEngineFrame, state->gainFader, engine, network);
+    result = wp_playerlib_stream_chunk_init(&state->chunks[i], state->streamStartTimelineFrame, state->streamEndTimelineFrame, state->phaseEndEngineFrame, state->gainFader, engine, network, state->audioStartedFlag);
     if (result != 0) { // Note: Seems that it always returns 0 - may be unneaded
       wp_playerlib_stream_destroy(state);
       return result;
