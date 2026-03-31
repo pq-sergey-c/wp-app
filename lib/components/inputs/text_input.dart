@@ -14,6 +14,8 @@ class TextInput extends ConsumerStatefulWidget {
     this.textInputAction = TextInputAction.done,
     this.onTapOutside,
     this.trailingActions = const <Widget>[],
+    this.maxLines = 1,
+    this.fontSize,
     super.key,
   });
 
@@ -24,6 +26,8 @@ class TextInput extends ConsumerStatefulWidget {
   final TextInputAction textInputAction;
   final ValueChanged<PointerDownEvent>? onTapOutside;
   final List<Widget> trailingActions;
+  final int? maxLines;
+  final double? fontSize;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _TextInput();
@@ -61,11 +65,14 @@ class _TextInput extends ConsumerState<TextInput> {
   @override
   Widget build(BuildContext context) {
     final layout = ref.watch(responsiveLayoutProvider);
-    final textHeight = layout.getTextSize(TextSizes.normal);
+    final textHeight = widget.fontSize ?? layout.getTextSize(TextSizes.normal);
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final verticalPadding = (constraints.maxHeight - textHeight * 1.5) / 2;
+        final verticalPadding =
+            constraints.maxHeight.isFinite
+                ? (constraints.maxHeight - textHeight * 1.5) / 2
+                : 12.0;
         final suffixChildren =
             hasText
                 ? [
@@ -85,6 +92,7 @@ class _TextInput extends ConsumerState<TextInput> {
         return TextField(
           controller: inputController,
           focusNode: widget.focusNode,
+          maxLines: widget.maxLines,
           textInputAction: widget.textInputAction,
           onSubmitted: widget.onSubmitted,
           onTapOutside: widget.onTapOutside,

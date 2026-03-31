@@ -128,6 +128,11 @@ int wp_playerlib_seek_to_time_in_phase(WpPlayerLibState* state, int64_t timeWith
  */
 float wp_playerlib_get_buffered_time(WpPlayerLibState* state);
 
+/**
+ * @return bool - true if at least one audio chunk has started playing since the last engine start
+ */
+bool wp_playerlib_has_audio_started(WpPlayerLibState* state);
+
 // =================   =================
 // For manual PCM reading outside of regular audio context (e.g. tests, static file rendering)
 void wp_playerlib_read_pcm_frames(WpPlayerLibState* state, void *output, uint64_t framesToRead);

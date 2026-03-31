@@ -8,6 +8,7 @@ import 'package:wp_player/components/controls/button.dart';
 import 'package:wp_player/components/inputs/link_input.dart';
 import 'package:wp_player/pages/connect_page/types/connect_page_show_popup.dart';
 import 'package:wp_player/providers/responsive_layout/responsive_layout.provider.dart';
+import 'package:wp_player/providers/responsive_layout/types/enums/responsive_layout_text_sizes.dart';
 import 'package:wp_player/services/player/player.service.dart';
 
 class ConnectPageActionLink extends HookConsumerWidget {
@@ -55,9 +56,10 @@ class ConnectPageActionLink extends HookConsumerWidget {
     return Column(
       spacing: layout.getClampedHeight(percent: 3, min: 20),
       children: [
-        SizedBox(
-          width: double.infinity,
-          height: layout.getClampedHeight(percent: 7, min: 65),
+        ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: layout.getClampedHeight(percent: 7, min: 65),
+          ),
           child: LinkInput(
             inputController: inputController,
             labelText: 'Insert link',
@@ -70,6 +72,8 @@ class ConnectPageActionLink extends HookConsumerWidget {
               ),
             ],
             trailingActions: trailingActions,
+            maxLines: null,
+            fontSize: layout.getTextSize(TextSizes.sm),
           ),
         ),
         Button(

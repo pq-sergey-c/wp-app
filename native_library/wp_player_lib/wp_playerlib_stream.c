@@ -28,6 +28,8 @@ typedef struct WpPlayerLibStreamState {
   int64_t timelineToEngineFrameDelta;
   int64_t phaseEndEngineFrame;
 
+  _Atomic bool *audioStartedFlag;
+
 } WpPlayerLibStreamState;
 
 typedef struct WpPlayerLibStreamOutputs {
@@ -41,11 +43,12 @@ typedef struct WpPlayerLibStreamOutputs {
 
 void wp_playerlib_stream_destroy(WpPlayerLibStreamState *state);
 
-int wp_playerlib_stream_init(WpPlayerLibStreamState *state, const char *id, WpPlayerLibPhase phase, uint64_t fromTime, uint64_t toTime, uint64_t fadeOutTime, const char *streamUrl, bool loop, int64_t bufferingLookahead, float gain, bool usesSidechain, float sidechainGain, WpPlayerLibNetworkState *network, WpPlayerLibStreamOutputs *outputs, ma_engine *engine) {
+int wp_playerlib_stream_init(WpPlayerLibStreamState *state, const char *id, WpPlayerLibPhase phase, uint64_t fromTime, uint64_t toTime, uint64_t fadeOutTime, const char *streamUrl, bool loop, int64_t bufferingLookahead, float gain, bool usesSidechain, float sidechainGain, WpPlayerLibNetworkState *network, WpPlayerLibStreamOutputs *outputs, ma_engine *engine, _Atomic bool *audioStartedFlag) {
   state->id = strdup(id);
   state->phase = phase;
   state->status = WP_S_ARMED;
   state->engine = engine;
+  state->audioStartedFlag = audioStartedFlag;
   uint64_t sr = ma_engine_get_sample_rate(engine);
   state->streamStartTimelineFrame = fromTime * sr / 1000;
   state->streamEndTimelineFrame = toTime * sr / 1000;
@@ -152,7 +155,7 @@ int wp_playerlib_stream_init(WpPlayerLibStreamState *state, const char *id, WpPl
   }
 
   for (int i = 0; i < WP_PLAYERLIB_STREAM_CHUNK_COUNT; i++) {
-    result = wp_playerlib_stream_chunk_init(&state->chunks[i], state->streamStartTimelineFrame, state->streamEndTimelineFrame, state->phaseEndEngineFrame, state->gainFader, engine, network);
+    result = wp_playerlib_stream_chunk_init(&state->chunks[i], state->streamStartTimelineFrame, state->streamEndTimelineFrame, state->phaseEndEngineFrame, state->gainFader, engine, network, state->audioStartedFlag);
     if (result != 0) { // Note: Seems that it always returns 0 - may be unneaded
       wp_playerlib_stream_destroy(state);
       return result;
@@ -425,14 +428,6 @@ int wp_playerlib_stream_update_attributes(WpPlayerLibStreamState *state, uint64_
 float wp_playerlib_stream_get_buffered_time(WpPlayerLibStreamState *state) {
   int64_t sr = ma_engine_get_sample_rate(state->engine);
 
-  // Find the maximum toTime of all buffered chunks
-  // Since chunks are loaded in order, this will also be the time to which we are buffered
-  float bufferedToTime = 0;
-  for (int i = 0; i < WP_PLAYERLIB_STREAM_CHUNK_COUNT; i++) {
-    if (wp_playerlib_stream_chunk_is_buffered(&state->chunks[i])) {
-      bufferedToTime = fmaxf(bufferedToTime, state->chunks[i].toTime);
-    }
-  }
   // We have the stream start frame if it's in fact been started.
   // Otherwise we simulate by calculating what the stream start frame would be
   // if it was started now.
@@ -445,8 +440,49 @@ float wp_playerlib_stream_get_buffered_time(WpPlayerLibStreamState *state) {
   int64_t currentStreamFrame = currentEngineFrame - streamStartEngineFrame;
   // Convert current frame to time in seconds
   float currentTime = (float)currentStreamFrame / (float)sr;
-  // The buffered time is the amount of time from the current time we have buffered
-  return fmaxf(bufferedToTime - currentTime, 0.0f);
+
+  // Collect the fromTime/toTime of all actually-buffered (downloaded) chunks.
+  // We then find the contiguous range starting from the current playback position,
+  // so we never overcount when there are gaps between loaded chunks.
+  int bufferedCount = 0;
+  float bufferedFromTimes[WP_PLAYERLIB_STREAM_CHUNK_COUNT];
+  float bufferedToTimes[WP_PLAYERLIB_STREAM_CHUNK_COUNT];
+  for (int i = 0; i < WP_PLAYERLIB_STREAM_CHUNK_COUNT; i++) {
+    if (wp_playerlib_stream_chunk_is_buffered(&state->chunks[i])) {
+      bufferedFromTimes[bufferedCount] = state->chunks[i].fromTime;
+      bufferedToTimes[bufferedCount] = state->chunks[i].toTime;
+      bufferedCount++;
+    }
+  }
+
+  if (bufferedCount == 0) {
+    return 0.0f;
+  }
+
+  // Sort by fromTime (simple insertion sort — at most 200 elements)
+  for (int i = 1; i < bufferedCount; i++) {
+    float keyFrom = bufferedFromTimes[i];
+    float keyTo = bufferedToTimes[i];
+    int j = i - 1;
+    while (j >= 0 && bufferedFromTimes[j] > keyFrom) {
+      bufferedFromTimes[j + 1] = bufferedFromTimes[j];
+      bufferedToTimes[j + 1] = bufferedToTimes[j];
+      j--;
+    }
+    bufferedFromTimes[j + 1] = keyFrom;
+    bufferedToTimes[j + 1] = keyTo;
+  }
+
+  // Walk the sorted chunks and find the contiguous end from currentTime.
+  // A small tolerance (0.01s) handles floating-point gaps between adjacent chunks.
+  float contiguousEnd = currentTime;
+  for (int i = 0; i < bufferedCount; i++) {
+    if (bufferedFromTimes[i] <= contiguousEnd + 0.01f && bufferedToTimes[i] > contiguousEnd) {
+      contiguousEnd = bufferedToTimes[i];
+    }
+  }
+
+  return fmaxf(contiguousEnd - currentTime, 0.0f);
 }
 
 

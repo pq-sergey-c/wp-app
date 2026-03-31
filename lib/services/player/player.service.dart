@@ -47,6 +47,7 @@ class PlayerService implements IPlayerService {
     _isConnectionInterruptedNotifier = null;
     _bufferedTimeNotifierPoller?.dispose();
     _bufferedTimeNotifierPoller = null;
+    _hasAudioStartedNotifier.value = false;
 
     await _orchestrator?.dispose();
     _orchestrator = null;
@@ -73,7 +74,10 @@ class PlayerService implements IPlayerService {
 
   // Data from native player
   AsyncNotifierPoller<Duration>? _bufferedTimeNotifierPoller;
-  static const Duration _bufferedTimePollingInterval = Duration(milliseconds: 490);
+  final ValueNotifier<bool> _hasAudioStartedNotifier = ValueNotifier(false);
+  static const Duration _bufferedTimePollingInterval = Duration(
+    milliseconds: 490,
+  );
 
   static const int bufferingLookaheadOffline = 10 * 60 * 60;
   static const int bufferingLookaheadOnline = 20 * 60;
@@ -131,13 +135,16 @@ class PlayerService implements IPlayerService {
   Duration get timeInPhase => NativeLibraryPlayer().timeInPhase;
 
   @override
-  ValueListenable<bool>? get isPlayingListenable => NativeLibraryPlayer().isPlayingState;
+  ValueListenable<bool>? get isPlayingListenable =>
+      NativeLibraryPlayer().isPlayingState;
 
   @override
-  ValueListenable<Duration?>? get currentPlayTimeListenable => _currentPlayTimeNotifier;
+  ValueListenable<Duration?>? get currentPlayTimeListenable =>
+      _currentPlayTimeNotifier;
 
   @override
-  ValueListenable<Duration?>? get playbackDurationListenable => _playbackDurationNotifier;
+  ValueListenable<Duration?>? get playbackDurationListenable =>
+      _playbackDurationNotifier;
 
   @override
   SessionInfo get sessionInformation {
@@ -147,43 +154,65 @@ class PlayerService implements IPlayerService {
       id: _session!.id,
       title: _session!.sessionName,
       sessionType: _session!.renderType,
-      artist: _session!.providerName.isNotEmpty ? _session!.providerName : _fakeArtist,
+      artist:
+          _session!.providerName.isNotEmpty
+              ? _session!.providerName
+              : _fakeArtist,
       deviceInfo: "$_providerDeviceName → $_listenerDeviceName",
-      imageUrl: _session!.providerImageUrl.isNotEmpty ? _session!.providerImageUrl : "",
+      imageUrl:
+          _session!.providerImageUrl.isNotEmpty
+              ? _session!.providerImageUrl
+              : "",
       atmosphereColors: _session!.score.atmosphereColors,
       emotionalIntensity: _session!.score.emotionalIntensity,
       userRole: _userRole,
-      providerControlUri: _session!.getProviderControlUri(_userRole, _linkSessionInfo!.externalOrchestratorEnv),
+      providerControlUri: _session!.getProviderControlUri(
+        _userRole,
+        _linkSessionInfo!.externalOrchestratorEnv,
+      ),
     );
   }
 
   @override
   bool get canControlPlayback {
     _assertSessionAndSessionInfoExist();
-    return isOffline || _session!.canClientStartEarly || (!isOffline && _userRole == UserRole.provider);
+    return isOffline ||
+        _session!.canClientStartEarly ||
+        (!isOffline && _userRole == UserRole.provider);
   }
 
   @override
-  void reportConnectionIssue() => _isConnectionInterruptedNotifier?.value = true;
+  void reportConnectionIssue() =>
+      _isConnectionInterruptedNotifier?.value = true;
 
   @override
-  void reportConnectionRestored() => _isConnectionInterruptedNotifier?.value = false;
+  void reportConnectionRestored() =>
+      _isConnectionInterruptedNotifier?.value = false;
 
   @override
-  ValueListenable<bool>? get isConnectionInterruptedListenable => _isConnectionInterruptedNotifier;
+  ValueListenable<bool>? get isConnectionInterruptedListenable =>
+      _isConnectionInterruptedNotifier;
 
   @override
   bool get isOffline {
     _assertSessionAndSessionInfoExist();
-    return _session!.renderType == SessionRenderType.preRendered || _session!.endTime != null;
+    return _session!.renderType == SessionRenderType.preRendered ||
+        _session!.endTime != null;
   }
 
   @override
-  ValueListenable<Duration?>? get bufferedTimeListenable => _bufferedTimeNotifierPoller?.listenable;
+  ValueListenable<Duration?>? get bufferedTimeListenable =>
+      _bufferedTimeNotifierPoller?.listenable;
+
+  ValueListenable<bool> get hasAudioStartedListenable =>
+      _hasAudioStartedNotifier;
 
   // -----------------------------------------------------------
 
-  Future<void> _startSession(LinkSessionInfo linkSessionInfo, Session session) async {
+  Future<void> _startSession(
+    LinkSessionInfo linkSessionInfo,
+    Session session,
+  ) async {
     await disconnect();
 
     _session = session;
@@ -197,10 +226,20 @@ class PlayerService implements IPlayerService {
     _playbackDurationNotifier = ValueNotifier(null);
     _isConnectionInterruptedNotifier = ValueNotifier(false);
 
-    NativeLibraryPlayer.rebuild(bufferingLookahead: isOffline ? bufferingLookaheadOffline : bufferingLookaheadOnline);
+    NativeLibraryPlayer.rebuild(
+      bufferingLookahead:
+          isOffline ? bufferingLookaheadOffline : bufferingLookaheadOnline,
+    );
 
     _bufferedTimeNotifierPoller = AsyncNotifierPoller(
-      getValueFunction: () => !NativeLibraryPlayer.isPlayerExist() ? null : NativeLibraryPlayer().bufferedTime,
+      getValueFunction: () {
+        if (!NativeLibraryPlayer.isPlayerExist()) return null;
+        if (!_hasAudioStartedNotifier.value &&
+            NativeLibraryPlayer().hasAudioStarted) {
+          _hasAudioStartedNotifier.value = true;
+        }
+        return NativeLibraryPlayer().bufferedTime;
+      },
       interval: _bufferedTimePollingInterval,
       name: 'Buffered time (poller of native player value)',
     )..start();
@@ -212,7 +251,9 @@ class PlayerService implements IPlayerService {
     _updateStreams();
   }
 
-  Future<IExternalOrchestrator> _makeExternalOrchestrator({required bool isOffline}) async {
+  Future<IExternalOrchestrator> _makeExternalOrchestrator({
+    required bool isOffline,
+  }) async {
     _assertSessionAndSessionInfoExist();
 
     if (isOffline) {
@@ -224,7 +265,10 @@ class PlayerService implements IPlayerService {
         broadcastState: _session!.broadcastState,
         sessionDuration: _session!.duration,
         sessionScore: _session!.score,
-        artist: _session!.providerName.isNotEmpty ? _session!.providerName : _fakeArtist,
+        artist:
+            _session!.providerName.isNotEmpty
+                ? _session!.providerName
+                : _fakeArtist,
         sessionName: _session!.sessionName,
       );
     }
@@ -238,7 +282,10 @@ class PlayerService implements IPlayerService {
       broadcastId: _linkSessionInfo!.broadcastId,
       sessionId: _session!.id,
       sessionScore: _session!.score,
-      artist: _session!.providerName.isNotEmpty ? _session!.providerName : _fakeArtist,
+      artist:
+          _session!.providerName.isNotEmpty
+              ? _session!.providerName
+              : _fakeArtist,
       sessionName: _session!.sessionName,
     );
   }
@@ -288,7 +335,9 @@ class PlayerService implements IPlayerService {
 
   void _assertSessionAndSessionInfoExist() {
     if (_session == null || _linkSessionInfo == null) {
-      throw StateError("Player state invalid: session and sessionInfo must not be null");
+      throw StateError(
+        "Player state invalid: session and sessionInfo must not be null",
+      );
     }
   }
 
@@ -300,7 +349,9 @@ class PlayerService implements IPlayerService {
 
   void _assertPlayingStateNotifiersExist() {
     if (!_isPlayingStateNotifiersExist()) {
-      throw StateError("Player state invalid: player state notifiers must not be null");
+      throw StateError(
+        "Player state invalid: player state notifiers must not be null",
+      );
     }
   }
 

@@ -11,7 +11,8 @@ import 'package:wp_player/services/player.native_lib/player.native_lib.dart';
 import 'package:wp_player/services/player.native_lib/types/native_message.native_lib.dart';
 import 'package:wp_player/utils/logger/logger.dart';
 
-typedef _ResponseTuple = ({bool ignore, Uint8List? data, String? fileExtension, bool success});
+typedef _ResponseTuple =
+    ({bool ignore, Uint8List? data, String? fileExtension, bool success});
 
 /// Singleton
 class NetworkService implements INetworkService {
@@ -25,7 +26,8 @@ class NetworkService implements INetworkService {
 
   // ------------------------------------------------
 
-  final Map<int, CancelableOperation<_ResponseTuple>> _cancelableOperations = {};
+  final Map<int, CancelableOperation<_ResponseTuple>> _cancelableOperations =
+      {};
 
   @override
   Future<void> onNetworkRequest(WpDataRequest data) async {
@@ -36,35 +38,58 @@ class NetworkService implements INetworkService {
     _cancelableOperations[data.id] = cancelable;
 
     final result = await cancelable.valueOrCancellation(null);
+    _cancelableOperations.remove(data.id);
     if (result == null) return;
     await _handleResponse(data.id, result);
   }
 
   @override
   Future<void> onNetworkCancel(WpDataCancelRequest data) async {
-    final CancelableOperation? completer = _cancelableOperations.remove(data.id);
+    final CancelableOperation? completer = _cancelableOperations.remove(
+      data.id,
+    );
     if (completer != null && !completer.isCompleted) await completer.cancel();
   }
 
   // ------------------------------------------------
 
   Future<_ResponseTuple> _networkCall(WpDataRequest data) async {
+    // Respect the scheduled time from the native library (e.g. m3u8 re-poll intervals)
+    final delay = data.scheduledTime.difference(DateTime.now());
+    if (delay > Duration.zero) {
+      await Future.delayed(delay);
+    }
+
     late final Uint8List blob;
-    final (:String? clearedString, :NetworkUrlPrefixes? type) = NetworkUrlPrefixes.resolveString(data.url);
+    final (
+      :String? clearedString,
+      :NetworkUrlPrefixes? type,
+    ) = NetworkUrlPrefixes.resolveString(data.url);
 
     if (type == null || clearedString == null) {
-      logConsole.f('Network service: invalid or missing URL prefix in "${data.url}"');
+      logConsole.f(
+        'Network service: invalid or missing URL prefix in "${data.url}"',
+      );
       return (ignore: true, data: null, success: false, fileExtension: null);
     }
-    final String? fileExtension = clearedString.contains('.') ? clearedString.split('.').last : null;
+    final String? fileExtension =
+        clearedString.contains('.') ? clearedString.split('.').last : null;
 
     switch (type) {
       case NetworkUrlPrefixes.localFile:
         // TODO: add file check or something
         blob = (await rootBundle.load(clearedString)).buffer.asUint8List();
-        return (ignore: false, data: blob, success: true, fileExtension: fileExtension);
+        return (
+          ignore: false,
+          data: blob,
+          success: true,
+          fileExtension: fileExtension,
+        );
       case NetworkUrlPrefixes.httpRequest:
-        final http.Response response = await http.get(Uri.parse(clearedString), headers: {"Accept": "*/*"});
+        final http.Response response = await http.get(
+          Uri.parse(clearedString),
+          headers: {"Accept": "*/*"},
+        );
         return (
           ignore: false,
           data: response.bodyBytes,

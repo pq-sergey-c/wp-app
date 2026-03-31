@@ -73,6 +73,9 @@ abstract class INativePlayer {
   /// **Note**: throws
   Duration get bufferedTime;
 
+  /// Whether at least one audio chunk has started playing since the last engine start
+  bool get hasAudioStarted;
+
   /// Test function
   String generateGreeting(int number, double divider, String name);
 }
