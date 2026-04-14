@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:wp_player/components/controls/external_link_box.dart';
 import 'package:wp_player/pages/player/fragments/buffer_time/buffer_time.dart';
 import 'package:wp_player/pages/player/fragments/playback_timer/playback_timer.dart';
@@ -113,6 +114,7 @@ class MusicPlayer extends HookConsumerWidget {
                                     externalLink: providerControlUri,
                                     maxAmountOfLines: 2,
                                     onOverflow: TextOverflow.ellipsis,
+                                    launchMode: LaunchMode.externalApplication,
                                   ),
                                 ),
                               ],

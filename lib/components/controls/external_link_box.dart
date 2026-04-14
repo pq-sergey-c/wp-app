@@ -16,6 +16,7 @@ class ExternalLinkBox extends ConsumerWidget {
     this.height,
     this.maxAmountOfLines,
     this.onOverflow,
+    this.launchMode,
     super.key,
   });
 
@@ -25,6 +26,7 @@ class ExternalLinkBox extends ConsumerWidget {
   final double? height;
   final int? maxAmountOfLines;
   final TextOverflow? onOverflow;
+  final LaunchMode? launchMode;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -48,7 +50,10 @@ class ExternalLinkBox extends ConsumerWidget {
           ),
         ),
         onPressed: () async {
-          if (!await launchUrl(externalLink)) {
+          final launched = launchMode != null
+              ? await launchUrl(externalLink, mode: launchMode!)
+              : await launchUrl(externalLink);
+          if (!launched) {
             logConsole.f("Failed to launch external link: $externalLink");
           }
         },
