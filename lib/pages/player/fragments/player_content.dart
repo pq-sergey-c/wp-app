@@ -138,7 +138,12 @@ class MusicPlayer extends HookConsumerWidget {
                                     text: const TextSpan(
                                       text: "Advanced controls in your browser",
                                     ),
-                                    externalLink: providerControlUri,
+                                    externalLink: providerControlUri.replace(
+                                      queryParameters: {
+                                        ...providerControlUri.queryParameters,
+                                        'source': 'app',
+                                      },
+                                    ),
                                     maxAmountOfLines: 2,
                                     onOverflow: TextOverflow.ellipsis,
                                     launchMode: LaunchMode.externalApplication,
