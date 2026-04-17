@@ -22,6 +22,9 @@ class SessionInfo {
   /// has value only when session has setup needed to have it (e.g [sessionType] or what [userRole] is it)
   final Uri? providerControlUri;
 
+  /// True when a Live session has ended and is being replayed
+  final bool isReplay;
+
   const SessionInfo({
     required this.id,
     required this.title,
@@ -33,9 +36,15 @@ class SessionInfo {
     required this.atmosphereColors,
     required this.userRole,
     required this.providerControlUri,
+    this.isReplay = false,
   });
 
+  /// Returns the display name for the session type, accounting for replay
+  String get sessionTypeDisplayName => isReplay ? 'Replay' : sessionType.getReadableName;
+
   String get sessionDescription {
+    if (isReplay) return "This is a replay of a previously live session (Replay)";
+
     final descriptionMap = _sessionTypeAndUserRoleToDescriptionMap[sessionType];
     if (descriptionMap == null) {
       throw StateError("Failed to find session descriptions-userRole map for session type - ${sessionType.name}");

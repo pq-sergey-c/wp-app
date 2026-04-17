@@ -26,8 +26,14 @@ class MusicPlayer extends HookConsumerWidget {
     final popup = ref.watch(popupProvider.notifier);
 
     // useMemoized is used here because of onPop event of current page - while [build] is still called - PlayerService is already disconnected
-    final sessionInfo = useMemoized(() => PlayerService().sessionInformation, []);
-    final canControlPlayback = useMemoized(() => PlayerService().canControlPlayback, []);
+    final sessionInfo = useMemoized(
+      () => PlayerService().sessionInformation,
+      [],
+    );
+    final canControlPlayback = useMemoized(
+      () => PlayerService().canControlPlayback,
+      [],
+    );
     final startVolume = useMemoized(() => PlayerService().volume, []);
     final providerControlUri = sessionInfo.providerControlUri;
 
@@ -40,7 +46,10 @@ class MusicPlayer extends HookConsumerWidget {
     const double bufferTextHeight = 20;
 
     final playerControlHeightToExclude =
-        volumeSliderHeight + trackInfoCardHeight + externalLinkMaxHeight + bufferTextHeight;
+        volumeSliderHeight +
+        trackInfoCardHeight +
+        externalLinkMaxHeight +
+        bufferTextHeight;
 
     final double spacing = layout.getClampedHeight(percent: 2.5);
 
@@ -61,7 +70,8 @@ class MusicPlayer extends HookConsumerWidget {
               Flexible(
                 child: LayoutBuilder(
                   builder: (context, constraints) {
-                    final maxHeight = constraints.maxHeight - playerControlHeightToExclude;
+                    final maxHeight =
+                        constraints.maxHeight - playerControlHeightToExclude;
                     final columnWidth = min(constraints.maxWidth, maxHeight);
 
                     return Column(
@@ -70,7 +80,10 @@ class MusicPlayer extends HookConsumerWidget {
                         SizedBox(
                           height: trackInfoCardHeight,
                           width: columnWidth,
-                          child: TrackInfoCard(sessionInfo: sessionInfo, popupManager: popup),
+                          child: TrackInfoCard(
+                            sessionInfo: sessionInfo,
+                            popupManager: popup,
+                          ),
                         ),
 
                         Flexible(
@@ -82,11 +95,14 @@ class MusicPlayer extends HookConsumerWidget {
                                   width: columnWidth,
                                   height: columnWidth,
                                   child: PlayerControl(
-                                    isPlayingListenable: PlayerService().isPlayingListenable,
+                                    isPlayingListenable:
+                                        PlayerService().isPlayingListenable,
                                     onPlayPausePressed: _togglePlay,
                                     isLocallyControllable: canControlPlayback,
                                     sessionInfo: sessionInfo,
-                                    currentPositionListenable: PlayerService().currentPlayTimeListenable,
+                                    currentPositionListenable:
+                                        PlayerService()
+                                            .currentPlayTimeListenable,
                                     phaseListenable: PlayerService().phase,
                                     isSessionStartedFunction: _isSessionStarted,
                                   ),
@@ -96,21 +112,32 @@ class MusicPlayer extends HookConsumerWidget {
                               SizedBox(
                                 height: volumeSliderHeight,
                                 width: columnWidth,
-                                child: VolumeSlider(startVolume: startVolume, onVolumeChanged: onVolumeChange),
+                                child: VolumeSlider(
+                                  startVolume: startVolume,
+                                  onVolumeChanged: onVolumeChange,
+                                ),
                               ),
 
                               SizedBox(
                                 height: bufferTextHeight,
                                 width: columnWidth,
-                                child: BufferTimeWidget(bufferTimeListenable: PlayerService().bufferedTimeListenable),
+                                child: BufferTimeWidget(
+                                  bufferTimeListenable:
+                                      PlayerService().bufferedTimeListenable,
+                                ),
                               ),
 
-                              if (providerControlUri != null) ...[
+                              if (providerControlUri != null &&
+                                  !sessionInfo.isReplay) ...[
                                 Container(
-                                  constraints: BoxConstraints(maxHeight: externalLinkMaxHeight),
+                                  constraints: BoxConstraints(
+                                    maxHeight: externalLinkMaxHeight,
+                                  ),
                                   width: columnWidth,
                                   child: ExternalLinkBox(
-                                    text: const TextSpan(text: "Advanced controls in your browser"),
+                                    text: const TextSpan(
+                                      text: "Advanced controls in your browser",
+                                    ),
                                     externalLink: providerControlUri,
                                     maxAmountOfLines: 2,
                                     onOverflow: TextOverflow.ellipsis,
