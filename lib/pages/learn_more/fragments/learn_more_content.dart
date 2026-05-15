@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:wp_player/components/controls/external_link_box.dart';
 import 'package:wp_player/constants/external_links.dart';
@@ -58,23 +57,13 @@ class LearnMoreContent extends HookConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Container(
-            padding: EdgeInsetsGeometry.only(top: layout.getClampedHeight(percent: 1.5, min: 10)),
-            width: layout.screenWidth,
-            child: SvgPicture.asset(
-              'assets/images/wavepaths_logo.svg',
-              height: 44,
-              fit: BoxFit.contain,
-              colorFilter: ColorFilter.mode(themeMode.themeConfig.title, BlendMode.srcIn),
-            ),
-          ),
-
           layout.selectByScreenType(
             orElse: _informationOrElse(layout, infoEntriesParsed),
             desktop: _informationDesktop(amountOfRowsInDesktop, amountOfColumnsInDesktop, infoEntriesParsed, layout),
           ),
-
-          ExternalLinkBox(
+          Padding(
+            padding: EdgeInsets.only(top: layout.getClampedHeight(percent: 4, min: 24)),
+            child: ExternalLinkBox(
             text: TextSpan(
               text: "Create your Provider Wavepaths account for free ",
               children: [
@@ -86,6 +75,7 @@ class LearnMoreContent extends HookConsumerWidget {
               style: TextStyle(fontSize: layout.getTextSize(TextSizes.xs)),
             ),
             externalLink: ExternalLinks.registerAccount.uri,
+            ),
           ),
         ],
       ),
@@ -164,11 +154,27 @@ class LearnMoreContent extends HookConsumerWidget {
       title: "Only Streaming?",
       text: TextSpan(
         text:
-            "Yes, this app only streams music. Starting and controlling sessions happens through the Provider’s account and ",
+            "Yes, this app only streams music. Starting sessions happens through the Provider’s account and ",
         children: [
           TextSpan(text: "within the browser", style: TextStyle(fontVariations: [FontVariationWeight.w700()])),
         ],
       ),
+    ),    (
+      title: "When running Live sessions\n(Real-time)",
+      text: TextSpan(
+        text:
+            "Pause and play controls are available within the app, while advanced controls are accessible only in the browser. You can keep the browser window open during your session, or click \"",
+        children: [
+          TextSpan(text: "Advanced controls in browser", style: TextStyle(fontVariations: [FontVariationWeight.w700()])),
+          const TextSpan(text: "\" in the app at any time after starting the session."),
+        ],
+      ),
     ),
-  ];
+    (
+      title: "When pre-recorded sessions\n(Playback-only / Offline)",
+      text: const TextSpan(
+        text:
+            "Pause and play controls are available within the app. To enable track skipping, we recommend either running sessions in Live mode or streaming the pre-recorded session directly in the browser instead.",
+      ),
+    ),  ];
 }

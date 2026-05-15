@@ -51,9 +51,9 @@ class SessionInfo {
 const Map<SessionRenderType, Map<UserRole, String>> _sessionTypeAndUserRoleToDescriptionMap = {
   SessionRenderType.preRendered: {
     UserRole.listener:
-        "The music of this session is created by your provider either for playback-only use (Pre-recorded)",
+        "The music of this session is created for playback-only use (pre-recorded)",
     UserRole.provider:
-        "The music of this session is created by your provider either for playback-only use (Pre-recorded)",
+        "The music of this session is created for playback-only use (pre-recorded)",
   },
   SessionRenderType.predictiveComposed: {
     UserRole.listener: "The music of this session is streaming in real-time (Live)",

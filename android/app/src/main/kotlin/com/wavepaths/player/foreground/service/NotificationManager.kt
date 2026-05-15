@@ -194,7 +194,7 @@ class ForegroundNotificationManager(val foregroundService: ForegroundService) {
                     setContentText("Service is starting...")
                     if (!isAndroid8OrMore) setPriority(NotificationCompat.PRIORITY_LOW)
                     setSmallIcon(android.R.drawable.ic_media_play)
-                    setContentTitle("WP Player")
+                    setContentTitle("Wavepaths Player")
                     setOngoing(true)
                     setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
                 }
@@ -213,7 +213,7 @@ class ForegroundNotificationManager(val foregroundService: ForegroundService) {
                 .apply {
                     setSmallIcon(android.R.drawable.ic_media_play)
                     setLargeIcon(getAlbumCover())
-                    setContentTitle("WP Player")
+                    setContentTitle("Wavepaths Player")
                     setSubText("is playing")
                     setOngoing(true)
                     setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_DEFERRED)
