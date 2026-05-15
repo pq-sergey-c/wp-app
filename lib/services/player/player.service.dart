@@ -170,6 +170,7 @@ class PlayerService implements IPlayerService {
         _userRole,
         _linkSessionInfo!.externalOrchestratorEnv,
       ),
+      isReplay: _isReplay,
     );
   }
 
@@ -199,6 +200,10 @@ class PlayerService implements IPlayerService {
     return _session!.renderType == SessionRenderType.preRendered ||
         _session!.endTime != null;
   }
+
+  bool get _isReplay =>
+      _session!.renderType == SessionRenderType.predictiveComposed &&
+      _session!.endTime != null;
 
   @override
   ValueListenable<Duration?>? get bufferedTimeListenable =>

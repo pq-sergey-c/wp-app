@@ -20,7 +20,7 @@ class TrackInfoDetails extends ConsumerWidget {
     final themeMode = ref.watch(themeModeProvider);
     final layout = ref.watch(responsiveLayoutProvider);
 
-    final typeTitle = sessionInfo.sessionType.getReadableName;
+    final typeTitle = sessionInfo.sessionTypeDisplayName;
     final actionTitle = switch (sessionInfo.userRole) {
       UserRole.provider => "Streaming by",
       UserRole.listener => "Provided by",

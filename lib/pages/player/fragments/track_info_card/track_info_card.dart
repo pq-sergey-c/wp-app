@@ -30,7 +30,7 @@ class TrackInfoCard extends ConsumerWidget {
                 buttonText: "Ok",
               ),
             ),
-        sessionType: sessionInfo.sessionType.getReadableName,
+        sessionType: sessionInfo.sessionTypeDisplayName,
       ),
     );
   }
