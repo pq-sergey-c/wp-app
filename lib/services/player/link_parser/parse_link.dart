@@ -1,5 +1,6 @@
 import 'package:wp_player/services/player/types/enums/external_orchestrator_environment.player.dart';
 import 'package:wp_player/services/player/types/link_session_info.player.dart';
+import 'package:wp_player/types/session/user_role/user_role.dart';
 import 'package:wp_player/utils/data_parse/http_link_parsing/check_translate_http_link_to_player_link.dart';
 
 ExternalOrchestratorEnvironment _externalOrchestratorEnvFromPathParts(List<String> pathParts) {
@@ -38,9 +39,21 @@ LinkSessionInfo? sessionServiceParseLink(String link) {
 
   final orchestratorEnv = _externalOrchestratorEnvFromPathParts(pathParts);
 
+  final String? roleString = uri.queryParameters['role'];
+  final UserRole? userRole = roleString != null ? _userRoleFromString(roleString) : null;
+
   return LinkSessionInfo(
     broadcastId: broadcastId,
     externalOrchestratorEnv: orchestratorEnv,
     withFreeVoiceover: withFreeVoiceOver,
+    userRole: userRole,
   );
+}
+
+UserRole? _userRoleFromString(String value) {
+  try {
+    return UserRole.fromString(value);
+  } catch (_) {
+    return null;
+  }
 }

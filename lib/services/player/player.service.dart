@@ -90,6 +90,10 @@ class PlayerService implements IPlayerService {
     final LinkSessionInfo? linkSessionInfo = sessionServiceParseLink(link);
     if (linkSessionInfo == null) return false;
 
+    if (linkSessionInfo.userRole != null) {
+      _userRole = linkSessionInfo.userRole!;
+    }
+
     try {
       final Session? session = await fetchSession(linkSessionInfo);
       if (session == null) return false;
